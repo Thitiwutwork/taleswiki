@@ -18,7 +18,6 @@
   background: radial-gradient(circle at 50% 15%, #172554 0%, #0c102a 50%, #030712 100%);
   border: 2px solid rgba(147, 197, 253, 0.3);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), inset 0 0 40px rgba(59, 130, 246, 0.15);
-  overflow: hidden;
   position: relative;
   font-family: inherit;
   color: #f1f5f9;
@@ -326,9 +325,9 @@
   background-position: center;
   background-repeat: no-repeat;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: visible;
   transition: background-image 0.3s ease-in-out;
-  padding: 14px 0 10px 0;
+  padding: 14px 12px 14px 12px;
 }
 
 /* Floating Stage Skin Switcher Badge */
@@ -416,21 +415,21 @@
 
 /* Character Portrait / Standing Visual */
 .character-portrait-box {
-  min-height: 380px;
-  max-height: 440px;
+  min-height: 220px;
+  max-height: 290px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   position: relative;
   z-index: 2;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .character-full-img {
-  max-height: 420px;
+  max-height: 280px;
   max-width: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 15px rgba(56, 189, 248, 0.25));
+  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 15px rgba(56, 189, 248, 0.25));
   animation: subtleFloat 3.5s ease-in-out infinite alternate;
 }
 
@@ -565,12 +564,12 @@
   color: #fde68a;
 }
 
-/* Core Stats Bars */
+/* Core Stats Bars (2-Column In-Game Grid) */
 .stats-bars-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 14px;
+  margin-bottom: 12px;
 }
 
 .stat-bar-row {

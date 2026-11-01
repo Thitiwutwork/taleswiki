@@ -132,12 +132,29 @@
 
           <!-- Character Visual Appearance (รูปลักษณ์ตัวละครทางการ) -->
           <div class="character-portrait-box">
-            <img
-              [src]="getCharacterImageUrl(char)"
-              [alt]="char.name"
-              class="character-full-img"
-              (error)="onCharacterImageError($event, char)"
-            />
+            @if (char.code === 'ha') {
+              <!-- Authentic Harang 2D standing character art -->
+              <img
+                src="/img/harang_standing.png"
+                [alt]="char.name"
+                class="character-full-img"
+              />
+            } @else {
+              <!-- Official Runner Avatar & Emblem Showcase -->
+              <div class="generic-char-showcase">
+                <div class="char-avatar-halo">
+                  <img
+                    [src]="getIconUrl(char.icon_file)"
+                    [alt]="char.name"
+                    class="char-halo-img"
+                    (error)="onCharacterImageError($event, char)"
+                  />
+                </div>
+                <div class="runner-silhouette">
+                  <span class="runner-big-glyph">🏃</span>
+                </div>
+              </div>
+            }
           </div>
 
           <!-- Character Info Overlay Card -->
