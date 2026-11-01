@@ -118,12 +118,10 @@ export class ItemService {
   }
 
   getIconUrl(iconFile: string | null | undefined): string {
-    if (!iconFile) return `${this.serverOrigin}/icons/default_icon.png`;
-    // Fast path: essential character face icons and default icon are bundled directly in frontend
-    if (iconFile.endsWith('_character_000.png') || iconFile === 'default_icon.png' || iconFile.startsWith('char_')) {
-      return `/icons/${iconFile}`;
-    }
-    return `${this.apiUrl}/icons/${iconFile}`;
+    if (!iconFile) return '/icons/default_icon.png';
+    if (iconFile.startsWith('http://') || iconFile.startsWith('https://')) return iconFile;
+    if (iconFile.startsWith('/')) return iconFile;
+    return `/icons/${iconFile}`;
   }
 
   getImgUrl(imgPath: string | null | undefined): string {

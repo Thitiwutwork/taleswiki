@@ -315,16 +315,15 @@ export class FittingRoomComponent implements OnInit {
   onCharacterImageError(event: Event, char: CharacterInfo | null) {
     if (!char) return;
     const img = event.target as HTMLImageElement;
-    const fallbackIcon = this.getIconUrl(char.icon_file);
-    if (char.icon_file && !img.src.includes(char.icon_file)) {
-      img.src = fallbackIcon;
-    } else {
-      img.src = this.itemService.getImgUrl('/img/characters/char_23.png');
+    if (!img.src.includes('harang_standing.png')) {
+      img.src = '/img/harang_standing.png';
     }
   }
 
   onItemIconError(event: Event) {
     const img = event.target as HTMLImageElement;
-    img.src = this.getIconUrl('default_icon.png');
+    if (!img.src.includes('default_icon.png')) {
+      img.src = '/icons/default_icon.png';
+    }
   }
 }
