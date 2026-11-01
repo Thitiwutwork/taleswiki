@@ -1,0 +1,477 @@
+<div class="app-container">
+  <!-- Top Navigation & Header -->
+  <header class="navbar">
+    <div class="header-content">
+      <div class="brand">
+        <span class="game-logo">🏃‍♂️</span>
+        <div class="brand-text">
+          <h1>Tales Runner Wiki</h1>
+          <span class="subtext">ระบบค้นหาไอเทม & ฐานข้อมูลไอเทมภาษาไทย</span>
+        </div>
+      </div>
+      <!-- Navigation View Modes -->
+      <nav class="view-modes-nav">
+        <button
+          class="nav-tab-btn"
+          [class.active]="currentView() === 'search'"
+          (click)="currentView.set('search')"
+        >
+          🔍 ค้นหาไอเทม
+        </button>
+        <button
+          class="nav-tab-btn highlight-3d"
+          [class.active]="currentView() === 'fitting'"
+          (click)="currentView.set('fitting')"
+        >
+          👗 ห้องแต่งตัว 3D
+        </button>
+      </nav>
+
+      <div class="stats-badge">
+        <span class="stat-item">📦 <strong>107,870</strong> ไอเทม</span>
+        <span class="stat-divider">|</span>
+        <span class="stat-item">🎨 <strong>94,500+</strong> ไอคอน</span>
+      </div>
+    </div>
+  </header>
+
+  @if (currentView() === 'fitting') {
+    <div class="fitting-wrapper" style="padding: 24px 16px;">
+      <app-fitting-room></app-fitting-room>
+    </div>
+  } @else {
+  <!-- Hero & Main Search Section -->
+  <section class="search-section">
+    <div class="search-box-wrapper">
+      <div class="search-input-group">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          placeholder="ค้นหาชื่อไอเทม, สเตตัส (เช่น ความเร็ว, TR), วิธีได้รับ หรือคำอธิบาย..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearchInput($event)"
+          class="main-search-input"
+        />
+        @if (searchQuery()) {
+          <button class="btn-clear" (click)="clearSearch()" title="ล้างคำค้นหา">✕</button>
+        }
+      </div>
+    </div>
+
+    <!-- Category Pills Tabs -->
+    <div class="category-tabs-scroll">
+      <div class="category-tabs">
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 'all'"
+          (click)="onSelectCategory('all')"
+        >
+          <span class="cat-icon">✨</span>
+          <span class="cat-name">ทั้งหมด</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 8"
+          (click)="onSelectCategory(8)"
+        >
+          <span class="cat-icon">🪽</span>
+          <span class="cat-name">หลัง / ปีก</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 1"
+          (click)="onSelectCategory(1)"
+        >
+          <span class="cat-icon">💇</span>
+          <span class="cat-name">ทรงผม</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 2"
+          (click)="onSelectCategory(2)"
+        >
+          <span class="cat-icon">👕</span>
+          <span class="cat-name">เสื้อ</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 3"
+          (click)="onSelectCategory(3)"
+        >
+          <span class="cat-icon">👖</span>
+          <span class="cat-name">กางเกง</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 4"
+          (click)="onSelectCategory(4)"
+        >
+          <span class="cat-icon">👟</span>
+          <span class="cat-name">รองเท้า</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 5"
+          (click)="onSelectCategory(5)"
+        >
+          <span class="cat-icon">👑</span>
+          <span class="cat-name">หมวก / ศีรษะ</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 9"
+          (click)="onSelectCategory(9)"
+        >
+          <span class="cat-icon">🚀</span>
+          <span class="cat-name">บูสเตอร์</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 10"
+          (click)="onSelectCategory(10)"
+        >
+          <span class="cat-icon">👓</span>
+          <span class="cat-name">ใบหน้า</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 11"
+          (click)="onSelectCategory(11)"
+        >
+          <span class="cat-icon">🐾</span>
+          <span class="cat-name">สัตว์เลี้ยง</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 6"
+          (click)="onSelectCategory(6)"
+        >
+          <span class="cat-icon">🧤</span>
+          <span class="cat-name">ถุงมือ</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 7"
+          (click)="onSelectCategory(7)"
+        >
+          <span class="cat-icon">📿</span>
+          <span class="cat-name">สร้อย / คอ</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 13"
+          (click)="onSelectCategory(13)"
+        >
+          <span class="cat-icon">🥋</span>
+          <span class="cat-name">ชุดเซ็ต</span>
+        </button>
+        <button
+          class="cat-tab"
+          [class.active]="selectedPosition() === 0"
+          (click)="onSelectCategory(0)"
+        >
+          <span class="cat-icon">📦</span>
+          <span class="cat-name">ทั่วไป / อื่นๆ</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Advanced Filter Bar -->
+    <div class="filters-bar">
+      <!-- Character Filter -->
+      <div class="filter-group">
+        <label>👤 ตัวละคร:</label>
+        <select
+          [ngModel]="selectedCharacter()"
+          (ngModelChange)="onSelectCharacter($event)"
+          class="filter-select"
+        >
+          @for (c of characters(); track c.id) {
+            <option [value]="c.id">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Acquisition Source Filter -->
+      <div class="filter-group">
+        <label>📍 วิธีได้รับ / หาจากไหน:</label>
+        <select
+          [ngModel]="selectedSource()"
+          (ngModelChange)="onSelectSource($event)"
+          class="filter-select"
+        >
+          @for (s of sources(); track s.id) {
+            <option [value]="s.id">{{ s.name }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Has Stats Checkbox -->
+      <div class="filter-group checkbox-group">
+        <label class="checkbox-label" (click)="toggleHasStats()">
+          <input type="checkbox" [checked]="hasStatsOnly()" readonly />
+          <span>⚡ เฉพาะไอเทมที่มีสเตตัส</span>
+        </label>
+      </div>
+
+      <!-- Reset Filters Button -->
+      @if (searchQuery() || selectedPosition() !== 'all' || selectedCharacter() !== 'all' || selectedSource() !== 'all' || hasStatsOnly()) {
+        <button class="btn-reset" (click)="resetFilters()">🔄 ล้างตัวกรอง</button>
+      }
+    </div>
+  </section>
+
+  <!-- Results Summary Header -->
+  <div class="results-header">
+    <div class="results-count">
+      พบทั้งหมด <strong>{{ totalItems() | number }}</strong> รายการ
+      @if (totalPages() > 1) {
+        <span class="page-indicator">(หน้า {{ currentPage() }} จาก {{ totalPages() }})</span>
+      }
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>กำลังค้นหาข้อมูลไอเทม...</p>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @if (!isLoading() && items().length === 0) {
+    <div class="empty-state">
+      <span class="empty-icon">🔍</span>
+      <h3>ไม่พบไอเทมที่ตรงกับเงื่อนไขการค้นหา</h3>
+      <p>ลองเปลี่ยนคำค้นหา หรือเลือกหมวดหมู่อื่นดูนะครับ</p>
+      <button class="btn-reset-large" (click)="resetFilters()">ล้างตัวกรองทั้งหมด</button>
+    </div>
+  }
+
+  <!-- Item Grid -->
+  @if (!isLoading() && items().length > 0) {
+    <div class="items-grid">
+      @for (item of items(); track item.id) {
+        <div class="item-card" (click)="openDetail(item)">
+          <!-- Card Image Header -->
+          <div class="card-icon-container">
+            @if (item.icon_file) {
+              <img
+                src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                [src]="getIconUrl(item)"
+                [alt]="item.name"
+                class="item-icon"
+                loading="lazy"
+                (error)="onImageError($event)"
+              />
+              <div class="icon-fallback" style="display: none;">
+                <span class="fallback-emoji">{{ getCategoryIcon(item.position_id) }}</span>
+              </div>
+            } @else {
+              <div class="icon-fallback">
+                <span class="fallback-emoji">{{ getCategoryIcon(item.position_id) }}</span>
+              </div>
+            }
+            <span class="item-id-badge">#{{ item.id }}</span>
+          </div>
+
+          <!-- Card Content -->
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="meta-slot">{{ item.position_name }}</span>
+              <span class="meta-char">{{ item.character_name }}</span>
+            </div>
+
+            <h3 class="item-title" [title]="item.name">{{ item.name }}</h3>
+
+            <!-- Price tags -->
+            <div class="price-tags">
+              @if (item.game_money > 0) {
+                <span class="price-tr">🟡 {{ item.game_money | number }} TR</span>
+              }
+              @if (item.cash > 0) {
+                <span class="price-cash">💎 {{ item.cash | number }} Cash</span>
+              }
+              @if (item.level_req > 1) {
+                <span class="level-req">Lv.{{ item.level_req }}</span>
+              }
+            </div>
+
+            <!-- Stats Preview -->
+            @if (item.stats.length > 0) {
+              <div class="stats-preview">
+                @for (stat of item.stats.slice(0, 3); track stat) {
+                  <span class="stat-pill">{{ stat }}</span>
+                }
+                @if (item.stats.length > 3) {
+                  <span class="stat-pill more">+{{ item.stats.length - 3 }}</span>
+                }
+              </div>
+            }
+
+            <!-- How to Obtain Section -->
+            <div class="obtain-section">
+              <div class="obtain-title">📍 วิธีได้รับ:</div>
+              <div class="obtain-badges">
+                @for (method of item.obtain_methods.slice(0, 2); track method) {
+                  <span class="obtain-badge" [ngClass]="getSourceBadgeClass(method)" [title]="method">
+                    {{ method }}
+                  </span>
+                }
+                @if (item.obtain_methods.length > 2) {
+                  <span class="obtain-badge more">+{{ item.obtain_methods.length - 2 }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button
+          class="page-btn nav-btn"
+          [disabled]="currentPage() === 1"
+          (click)="goToPage(currentPage() - 1)"
+        >
+          ◀ ก่อนหน้า
+        </button>
+
+        <button
+          class="page-btn"
+          [class.active]="currentPage() === 1"
+          (click)="goToPage(1)"
+        >
+          1
+        </button>
+
+        @if (currentPage() > 4) {
+          <span class="page-dots">...</span>
+        }
+
+        @for (p of getPaginationRange(); track p) {
+          <button
+            class="page-btn"
+            [class.active]="currentPage() === p"
+            (click)="goToPage(p)"
+          >
+            {{ p }}
+          </button>
+        }
+
+        @if (currentPage() < totalPages() - 3) {
+          <span class="page-dots">...</span>
+        }
+
+        <button
+          class="page-btn"
+          [class.active]="currentPage() === totalPages()"
+          (click)="goToPage(totalPages())"
+        >
+          {{ totalPages() }}
+        </button>
+
+        <button
+          class="page-btn nav-btn"
+          [disabled]="currentPage() === totalPages()"
+          (click)="goToPage(currentPage() + 1)"
+        >
+          ถัดไป ▶
+        </button>
+      </div>
+    }
+  }
+}
+
+  <!-- Detail Modal -->
+  @if (selectedItem(); as it) {
+    <div class="modal-backdrop" (click)="closeDetail()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="closeDetail()">✕</button>
+
+        <div class="modal-header">
+          <div class="modal-icon-box">
+            @if (it.icon_file) {
+              <img
+                src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                [src]="getIconUrl(it)"
+                [alt]="it.name"
+                class="modal-icon-img"
+                (error)="onImageError($event)"
+              />
+              <div class="icon-fallback" style="display: none;">
+                <span class="fallback-emoji-large">{{ getCategoryIcon(it.position_id) }}</span>
+              </div>
+            } @else {
+              <span class="fallback-emoji-large">{{ getCategoryIcon(it.position_id) }}</span>
+            }
+          </div>
+          <div class="modal-title-box">
+            <div class="modal-badges">
+              <span class="badge-pill id-pill">ID: #{{ it.id }}</span>
+              <span class="badge-pill slot-pill">{{ it.position_name }}</span>
+              <span class="badge-pill char-pill">{{ it.character_name }}</span>
+              @if (it.level_req > 1) {
+                <span class="badge-pill lvl-pill">เลเวล {{ it.level_req }} ขึ้นไป</span>
+              }
+            </div>
+            <h2 class="modal-item-name">{{ it.name }}</h2>
+            <div class="modal-prices">
+              @if (it.game_money > 0) {
+                <span class="modal-price tr">🟡 {{ it.game_money | number }} TR</span>
+              }
+              @if (it.cash > 0) {
+                <span class="modal-price cash">💎 {{ it.cash | number }} Cash</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <!-- Description -->
+          @if (it.description && it.description !== 'NO_DESC') {
+            <div class="modal-section">
+              <h4 class="section-title">📝 คำอธิบายไอเทม</h4>
+              <div class="description-text">{{ it.description }}</div>
+            </div>
+          }
+
+          <!-- Stats & Attributes -->
+          @if (it.stats.length > 0) {
+            <div class="modal-section">
+              <h4 class="section-title">⚡ คุณสมบัติ & สเตตัส (Stats)</h4>
+              <div class="modal-stats-list">
+                @for (st of it.stats; track st) {
+                  <div class="modal-stat-row">
+                    <span class="stat-dot">🔷</span>
+                    <span class="stat-text">{{ st }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- How to Obtain Section -->
+          <div class="modal-section">
+            <h4 class="section-title">📍 วิธีได้รับ / แหล่งที่มาของไอเทม</h4>
+            <div class="obtain-methods-list">
+              @for (m of it.obtain_methods; track m) {
+                <div class="obtain-row" [ngClass]="getSourceBadgeClass(m)">
+                  <span class="obtain-check">✔</span>
+                  <span class="obtain-row-text">{{ m }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-close-modal" (click)="closeDetail()">ปิดหน้าต่าง</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,414 @@
+<div class="fitting-room-container">
+  <!-- Top Navigation Bar -->
+  <header class="room-header">
+    <div class="header-tabs">
+      <button
+        class="tab-btn"
+        [class.active]="activeSubTab() === 'char'"
+        (click)="activeSubTab.set('char')"
+      >
+        ตัวละคร
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeSubTab() === 'avatar'"
+        (click)="activeSubTab.set('avatar')"
+      >
+        Avatar
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeSubTab() === 'costume'"
+        (click)="activeSubTab.set('costume')"
+      >
+        คอสตูม
+      </button>
+    </div>
+
+    <!-- Character Selector with Icons -->
+    <div class="character-selector">
+      <label class="char-label">เลือกตัวละคร:</label>
+      <div class="select-box-wrap">
+        <select
+          [ngModel]="selectedCharacter()"
+          (ngModelChange)="selectCharacter($event)"
+          class="char-select-dropdown"
+        >
+          @for (c of characters(); track c.id) {
+            <option [ngValue]="c">{{ c.name }} ({{ c.en_name }}) - {{ c.job }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Fitting Stage Layout -->
+  <div class="stage-layout">
+    <!-- Left Equipment Column (7 slots) -->
+    <aside class="slot-column left-column">
+      @for (slot of leftSlots(); track slot.key) {
+        <div
+          class="equip-slot-card"
+          [class.has-item]="equipped()[slot.key]"
+          (click)="openSlotPicker(slot)"
+          [title]="'คลิกเพื่อเลือก ' + slot.name"
+        >
+          <div class="slot-frame">
+            @if (equipped()[slot.key]; as item) {
+              <div class="item-preview">
+                @if (item.icon_file) {
+                  <img
+                    [src]="'/api/icons/' + item.icon_file"
+                    [alt]="item.name"
+                    class="item-icon-img"
+                    onerror="this.src='/icons/default_icon.png'"
+                  />
+                } @else {
+                  <span class="item-emoji">{{ slot.icon }}</span>
+                }
+                <button
+                  class="btn-unequip"
+                  (click)="unequipSlot(slot.key, $event)"
+                  title="ถอดไอเทมนี้ออก"
+                >
+                  ✕
+                </button>
+              </div>
+            } @else {
+              <div class="empty-slot">
+                <span class="slot-icon-glyph">{{ slot.icon }}</span>
+              </div>
+            }
+          </div>
+          <span class="slot-title">{{ slot.name }}</span>
+          @if (equipped()[slot.key]; as item) {
+            <span class="equipped-name">{{ item.name }}</span>
+          }
+        </div>
+      }
+    </aside>
+
+    <!-- Center 2D Character Showcase Stage -->
+    @if (selectedCharacter(); as char) {
+      <main class="center-stage">
+        <!-- Stage Aura & Background -->
+        <div class="character-stage-wrapper">
+          <!-- Magic Rune Circle Floor Glow -->
+          <div class="rune-floor-pedestal">
+            <div class="rune-ring outer-ring"></div>
+            <div class="rune-ring inner-ring"></div>
+            <div class="rune-light-glow"></div>
+          </div>
+
+          <!-- Character Visual Appearance (รูปลักษณ์ตัวละคร) -->
+          <div class="character-portrait-box">
+            @if (char.code === 'ha') {
+              <!-- Harang authentic standing cutout matching user screenshot -->
+              <img
+                src="/img/harang_standing.png"
+                [alt]="char.name"
+                class="character-full-img"
+              />
+            } @else {
+              <!-- Character Official Art Card -->
+              <div class="generic-char-showcase">
+                <div class="char-avatar-halo">
+                  <img
+                    [src]="'/api/icons/' + char.icon_file"
+                    [alt]="char.name"
+                    class="char-halo-img"
+                    onerror="this.src='/img/harang_standing.png'"
+                  />
+                </div>
+                <div class="runner-silhouette">
+                  <span class="runner-big-glyph">🏃</span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Character Info Overlay Card -->
+          <div class="char-profile-card">
+            <div class="char-header-row">
+              <div class="char-name-group">
+                <h2 class="runner-main-name">{{ char.name }}</h2>
+                <span class="runner-en-name">{{ char.en_name }}</span>
+              </div>
+              <div class="char-badges">
+                <span class="badge-pill job-badge">{{ char.job }}</span>
+                <span class="badge-pill gender-badge">{{ char.gender }}</span>
+                <button class="btn-read-lore" (click)="showLoreModal.set(true)">
+                  📖 เนื้อเรื่อง
+                </button>
+              </div>
+            </div>
+
+            <!-- Core Base Stats + Equipment Boost -->
+            <div class="stats-bars-section">
+              <!-- Top Speed -->
+              <div class="stat-bar-row">
+                <div class="stat-info-left">
+                  <span class="stat-name">🏃 ความเร็วสูงสุด</span>
+                  <span class="stat-calc">
+                    <strong>{{ totalStats().speed.total }}</strong>
+                    <small>({{ char.stats.speed }} + {{ totalStats().speed.item }})</small>
+                  </span>
+                </div>
+                <div class="stat-meter-track">
+                  <div
+                    class="stat-meter-fill base-fill"
+                    [style.width.%]="(char.stats.speed / 16) * 100"
+                    title="สเตตัสพื้นฐาน"
+                  ></div>
+                  <div
+                    class="stat-meter-fill item-fill"
+                    [style.width.%]="(totalStats().speed.item / 16) * 100"
+                    title="โบนัสจากไอเทม"
+                  ></div>
+                </div>
+              </div>
+
+              <!-- Acceleration -->
+              <div class="stat-bar-row">
+                <div class="stat-info-left">
+                  <span class="stat-name">⚡ อัตราเร่ง</span>
+                  <span class="stat-calc">
+                    <strong>{{ totalStats().accel.total }}</strong>
+                    <small>({{ char.stats.accel }} + {{ totalStats().accel.item }})</small>
+                  </span>
+                </div>
+                <div class="stat-meter-track">
+                  <div
+                    class="stat-meter-fill base-fill accel"
+                    [style.width.%]="(char.stats.accel / 16) * 100"
+                  ></div>
+                  <div
+                    class="stat-meter-fill item-fill accel"
+                    [style.width.%]="(totalStats().accel.item / 16) * 100"
+                  ></div>
+                </div>
+              </div>
+
+              <!-- Strength -->
+              <div class="stat-bar-row">
+                <div class="stat-info-left">
+                  <span class="stat-name">💥 แรงผลัก</span>
+                  <span class="stat-calc">
+                    <strong>{{ totalStats().strength.total }}</strong>
+                    <small>({{ char.stats.strength }} + {{ totalStats().strength.item }})</small>
+                  </span>
+                </div>
+                <div class="stat-meter-track">
+                  <div
+                    class="stat-meter-fill base-fill str"
+                    [style.width.%]="(char.stats.strength / 16) * 100"
+                  ></div>
+                  <div
+                    class="stat-meter-fill item-fill str"
+                    [style.width.%]="(totalStats().strength.item / 16) * 100"
+                  ></div>
+                </div>
+              </div>
+
+              <!-- Control -->
+              <div class="stat-bar-row">
+                <div class="stat-info-left">
+                  <span class="stat-name">🎮 การควบคุม</span>
+                  <span class="stat-calc">
+                    <strong>{{ totalStats().control.total }}</strong>
+                    <small>({{ char.stats.control }} + {{ totalStats().control.item }})</small>
+                  </span>
+                </div>
+                <div class="stat-meter-track">
+                  <div
+                    class="stat-meter-fill base-fill ctrl"
+                    [style.width.%]="(char.stats.control / 16) * 100"
+                  ></div>
+                  <div
+                    class="stat-meter-fill item-fill ctrl"
+                    [style.width.%]="(totalStats().control.item / 16) * 100"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Unique Character Abilities & Traits (ความสามารถของตัวละคร) -->
+            <div class="abilities-container">
+              <h4 class="abilities-heading">✨ ความสามารถพิเศษเฉพาะตัว</h4>
+              <div class="abilities-tags">
+                @for (ab of char.abilities; track ab) {
+                  <div class="ability-pill">
+                    <span class="ability-spark">✦</span>
+                    <span class="ability-text">{{ ab }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    }
+
+    <!-- Right Equipment Column (7 slots) -->
+    <aside class="slot-column right-column">
+      @for (slot of rightSlots(); track slot.key) {
+        <div
+          class="equip-slot-card"
+          [class.has-item]="equipped()[slot.key]"
+          (click)="openSlotPicker(slot)"
+          [title]="'คลิกเพื่อเลือก ' + slot.name"
+        >
+          <div class="slot-frame">
+            @if (equipped()[slot.key]; as item) {
+              <div class="item-preview">
+                @if (item.icon_file) {
+                  <img
+                    [src]="'/api/icons/' + item.icon_file"
+                    [alt]="item.name"
+                    class="item-icon-img"
+                    onerror="this.src='/icons/default_icon.png'"
+                  />
+                } @else {
+                  <span class="item-emoji">{{ slot.icon }}</span>
+                }
+                <button
+                  class="btn-unequip"
+                  (click)="unequipSlot(slot.key, $event)"
+                  title="ถอดไอเทมนี้ออก"
+                >
+                  ✕
+                </button>
+              </div>
+            } @else {
+              <div class="empty-slot">
+                <span class="slot-icon-glyph">{{ slot.icon }}</span>
+              </div>
+            }
+          </div>
+          <span class="slot-title">{{ slot.name }}</span>
+          @if (equipped()[slot.key]; as item) {
+            <span class="equipped-name">{{ item.name }}</span>
+          }
+        </div>
+      }
+    </aside>
+  </div>
+
+  <!-- Bottom Control Bar -->
+  <footer class="room-footer">
+    <div class="footer-actions-left">
+      <button class="action-btn btn-random" (click)="randomizeOutfit()">
+        🎲 สุ่มชุด
+      </button>
+      <button class="action-btn btn-clear" (click)="clearAllEquip()">
+        🔄 ถอดชุดทั้งหมด
+      </button>
+      <button class="action-btn btn-share" (click)="copyBuildShare()">
+        📋 คัดลอกข้อมูลเซ็ตชุด
+      </button>
+    </div>
+
+    <!-- Quick Stats Ticker -->
+    <div class="stats-ticker">
+      <div class="stat-pill highlight">
+        <span class="stat-label">EXP รวม:</span>
+        <span class="stat-val">+{{ totalStats().exp }}%</span>
+      </div>
+      <div class="stat-pill highlight">
+        <span class="stat-label">TR รวม:</span>
+        <span class="stat-val">+{{ totalStats().tr }}%</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Slide-In Item Picker Drawer -->
+  @if (activePickerSlot(); as slot) {
+    <div class="picker-backdrop" (click)="closeSlotPicker()">
+      <div class="picker-drawer" (click)="$event.stopPropagation()">
+        <div class="drawer-header">
+          <div class="drawer-title">
+            <span class="drawer-icon">{{ slot.icon }}</span>
+            <h3>เลือกไอเทม: {{ slot.name }}</h3>
+          </div>
+          <button class="btn-close-drawer" (click)="closeSlotPicker()">✕</button>
+        </div>
+
+        <!-- Search Bar inside Drawer -->
+        <div class="drawer-search">
+          <input
+            type="text"
+            placeholder="ค้นหาชื่อไอเทมในหมวดหมู่นี้..."
+            [ngModel]="pickerSearchQuery()"
+            (ngModelChange)="onPickerSearchChange($event)"
+            class="drawer-search-input"
+          />
+        </div>
+
+        <!-- Items Grid -->
+        <div class="drawer-body">
+          @if (isPickerLoading()) {
+            <div class="drawer-loading">
+              <span class="spinner">⏳</span>
+              <p>กำลังโหลดไอเทม...</p>
+            </div>
+          } @else if (pickerItems().length === 0) {
+            <div class="drawer-empty">
+              <p>ไม่พบไอเทมในหมวดนี้สำหรับ {{ selectedCharacter()?.name }}</p>
+            </div>
+          } @else {
+            <div class="picker-grid">
+              @for (item of pickerItems(); track item.id) {
+                <div class="picker-item-card" (click)="equipItem(slot.key, item)">
+                  <div class="card-icon-wrap">
+                    @if (item.icon_file) {
+                      <img
+                        [src]="'/api/icons/' + item.icon_file"
+                        [alt]="item.name"
+                        class="card-img"
+                        onerror="this.src='/icons/default_icon.png'"
+                      />
+                    } @else {
+                      <span class="fallback-icon">{{ slot.icon }}</span>
+                    }
+                  </div>
+                  <div class="card-info">
+                    <h4 class="card-item-name">{{ item.name }}</h4>
+                    <span class="card-char-name">{{ item.character_name }}</span>
+                    @if (item.stats && item.stats.length > 0) {
+                      <div class="card-stats-preview">
+                        <span>{{ item.stats[0] }}</span>
+                      </div>
+                    }
+                  </div>
+                  <button class="btn-equip-item">สวมใส่</button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Character Lore Modal Dialog -->
+  @if (showLoreModal()) {
+    <div class="lore-modal-backdrop" (click)="showLoreModal.set(false)">
+      <div class="lore-modal-card" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="showLoreModal.set(false)">✕</button>
+        <div class="lore-header">
+          <span class="lore-emoji">📜</span>
+          <div>
+            <h3>เรื่องราวของ {{ selectedCharacter()?.name }}</h3>
+            <span class="lore-subtitle">{{ selectedCharacter()?.en_name }} - {{ selectedCharacter()?.job }}</span>
+          </div>
+        </div>
+        <div class="lore-body">
+          <p class="story-paragraph">{{ selectedCharacter()?.story }}</p>
+        </div>
+        <div class="lore-footer">
+          <button class="btn-close-lore" (click)="showLoreModal.set(false)">ปิด</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

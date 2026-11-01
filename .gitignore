@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Angular caches
+.angular/
+tmp/
+out-tsc/
+
+# Large uncompressed files (>100MB rejected by GitHub)
+# The repository tracks data/items.sqlite.gz (23MB) and items.json.gz (5.5MB)
+*.sqlite
+items.json
+items.csv
+find_results.txt
+
+# Editor, Agent caches & OS
+.agent/
+.agents/
+.claude/
+.codex/
+.cursor/
+.devin/
+.gemini/
+.grok/
+.hermes/
+.kiro/
+.qoder/
+.rovodev/
+.vibe/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# Explicitly keep database archives, characters & frontend dist
+!data/items.sqlite.gz
+!items.json.gz
+!data/characters.json
+!frontend/dist/
