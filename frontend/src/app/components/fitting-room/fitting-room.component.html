@@ -52,7 +52,7 @@
         [title]="c.name + ' (' + c.en_name + ') - ' + c.job"
       >
         <img
-          [src]="'/api/icons/' + c.icon_file"
+          [src]="getIconUrl(c.icon_file)"
           [alt]="c.name"
           class="chip-avatar-img"
           (error)="onItemIconError($event)"
@@ -78,7 +78,7 @@
               <div class="item-preview">
                 @if (item.icon_file) {
                   <img
-                    [src]="'/api/icons/' + item.icon_file"
+                    [src]="getIconUrl(item.icon_file)"
                     [alt]="item.name"
                     class="item-icon-img"
                     (error)="onItemIconError($event)"
@@ -111,8 +111,18 @@
     <!-- Center 2D Character Showcase Stage -->
     @if (selectedCharacter(); as char) {
       <main class="center-stage">
-        <!-- Stage Aura & Background -->
-        <div class="character-stage-wrapper">
+        <!-- Stage Aura & Dynamic Skin Background -->
+        <div
+          class="character-stage-wrapper"
+          [style.backgroundImage]="selectedSkin() ? 'url(' + selectedSkin()!.url + ')' : ''"
+        >
+          <!-- Floating Skin Switcher Badge (matching in-game 'เปลี่ยนสกิน' button) -->
+          <div class="stage-skin-controls">
+            <button class="btn-stage-skin" (click)="showSkinModal.set(true)" title="เลือกสกินฉากหลังห้องแต่งตัว">
+              🎨 เปลี่ยนสกิน: <span>{{ selectedSkin()?.name || 'โรงเรียนเวทมนตร์' }}</span>
+            </button>
+          </div>
+
           <!-- Magic Rune Circle Floor Glow -->
           <div class="rune-floor-pedestal">
             <div class="rune-ring outer-ring"></div>
@@ -266,7 +276,7 @@
               <div class="item-preview">
                 @if (item.icon_file) {
                   <img
-                    [src]="'/api/icons/' + item.icon_file"
+                    [src]="getIconUrl(item.icon_file)"
                     [alt]="item.name"
                     class="item-icon-img"
                     (error)="onItemIconError($event)"
@@ -365,7 +375,7 @@
                   <div class="card-icon-wrap">
                     @if (item.icon_file) {
                       <img
-                        [src]="'/api/icons/' + item.icon_file"
+                        [src]="getIconUrl(item.icon_file)"
                         [alt]="item.name"
                         class="card-img"
                         (error)="onItemIconError($event)"
@@ -410,6 +420,50 @@
         </div>
         <div class="lore-footer">
           <button class="btn-close-lore" (click)="showLoreModal.set(false)">ปิด</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Room Skin Selection Modal Dialog -->
+  @if (showSkinModal()) {
+    <div class="skin-modal-backdrop" (click)="showSkinModal.set(false)">
+      <div class="skin-modal-card" (click)="$event.stopPropagation()">
+        <div class="skin-modal-header">
+          <div class="header-title-box">
+            <span class="skin-emoji">🎨</span>
+            <div>
+              <h3>เปลี่ยนสกินห้องแต่งตัว (Room Skin)</h3>
+              <p class="skin-modal-subtitle">เลือกภาพพื้นหลังสำหรับห้องแต่งตัวของคุณ</p>
+            </div>
+          </div>
+          <button class="modal-close" (click)="showSkinModal.set(false)">✕</button>
+        </div>
+
+        <div class="skin-modal-body">
+          <div class="skin-grid">
+            @for (skin of skins(); track skin.id) {
+              <div
+                class="skin-card"
+                [class.active]="selectedSkin()?.id === skin.id"
+                (click)="selectSkin(skin)"
+              >
+                <div class="skin-preview-wrap">
+                  <img [src]="skin.url" [alt]="skin.name" class="skin-thumb" />
+                  @if (selectedSkin()?.id === skin.id) {
+                    <div class="skin-selected-badge">✓ ใช้งานอยู่</div>
+                  }
+                </div>
+                <div class="skin-card-info">
+                  <span class="skin-card-name">{{ skin.name }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="skin-modal-footer">
+          <button class="btn-close-skin" (click)="showSkinModal.set(false)">ปิดหน้าต่าง</button>
         </div>
       </div>
     </div>

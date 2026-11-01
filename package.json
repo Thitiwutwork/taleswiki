@@ -1,0 +1,9 @@
+{
+  "name": "taleswiki-monorepo",
+  "version": "1.0.0",
+  "description": "Tales Runner Wiki & Fitting Room",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build",
+    "start": "node server/server.js"
+  }
+}

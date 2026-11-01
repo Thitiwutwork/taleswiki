@@ -18,3 +18,12 @@ export interface CharacterInfo {
   image_url: string;
   icon_file: string;
 }
+
+export interface RoomSkin {
+  id: string;
+  name: string;
+  filename: string;
+  url: string;
+  width?: number;
+  height?: number;
+}

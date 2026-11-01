@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ItemService } from '../../services/item.service';
 import { Item } from '../../models/item.model';
-import { CharacterInfo } from '../../models/character.model';
+import { CharacterInfo, RoomSkin } from '../../models/character.model';
 
 export interface EquipSlotDef {
   key: string;
@@ -34,6 +34,11 @@ export class FittingRoomComponent implements OnInit {
   selectedCharacter = signal<CharacterInfo | null>(null);
   activeSubTab = signal<'char' | 'avatar' | 'costume'>('char');
   showLoreModal = signal<boolean>(false);
+
+  // Stage Background Skins (สกินห้องแต่งตัว)
+  skins = signal<RoomSkin[]>([]);
+  selectedSkin = signal<RoomSkin | null>(null);
+  showSkinModal = signal<boolean>(false);
 
   // Slot Definitions matching in-game dressing room
   slotDefs: EquipSlotDef[] = [
@@ -144,6 +149,26 @@ export class FittingRoomComponent implements OnInit {
 
   ngOnInit() {
     this.loadCharacters();
+    this.loadRoomSkins();
+  }
+
+  loadRoomSkins() {
+    this.itemService.getRoomSkins().subscribe({
+      next: (skins) => {
+        this.skins.set(skins);
+        // Default to Royal Academy (Image 2 in-game look)
+        const defaultSkin = skins.find(s => s.id === 'skin_royal_academy') || skins[0];
+        if (defaultSkin) {
+          this.selectedSkin.set(defaultSkin);
+        }
+      },
+      error: (e) => console.error('Failed to load room skins', e)
+    });
+  }
+
+  selectSkin(skin: RoomSkin) {
+    this.selectedSkin.set(skin);
+    this.showSkinModal.set(false);
   }
 
   loadCharacters() {
@@ -277,24 +302,29 @@ export class FittingRoomComponent implements OnInit {
     alert('คัดลอกข้อมูลเซ็ตชุดและสเตตัสเรียบร้อยแล้ว!');
   }
 
+  getIconUrl(iconFile: string | null | undefined): string {
+    return this.itemService.getIconUrl(iconFile);
+  }
+
   getCharacterImageUrl(char: CharacterInfo | null): string {
-    if (!char) return '/img/harang_standing.png';
-    if (char.image_url) return char.image_url;
-    return `/img/characters/char_${char.id}.png`;
+    if (!char) return this.itemService.getImgUrl('/img/characters/char_23.png');
+    const path = char.image_url || `/img/characters/char_${char.id}.png`;
+    return this.itemService.getImgUrl(path);
   }
 
   onCharacterImageError(event: Event, char: CharacterInfo | null) {
     if (!char) return;
     const img = event.target as HTMLImageElement;
+    const fallbackIcon = this.getIconUrl(char.icon_file);
     if (char.icon_file && !img.src.includes(char.icon_file)) {
-      img.src = `/api/icons/${char.icon_file}`;
+      img.src = fallbackIcon;
     } else {
-      img.src = '/img/harang_standing.png';
+      img.src = this.itemService.getImgUrl('/img/characters/char_23.png');
     }
   }
 
   onItemIconError(event: Event) {
     const img = event.target as HTMLImageElement;
-    img.src = '/api/icons/default_icon.png';
+    img.src = this.getIconUrl('default_icon.png');
   }
 }
