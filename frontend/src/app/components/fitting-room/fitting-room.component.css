@@ -98,6 +98,79 @@
   border-color: #7dd3fc;
 }
 
+/* Quick Character Avatar Scroll Ribbon */
+.character-avatar-ribbon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(15, 23, 42, 0.75);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+}
+
+.character-avatar-ribbon::-webkit-scrollbar {
+  height: 5px;
+}
+
+.character-avatar-ribbon::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.4);
+  border-radius: 4px;
+}
+
+.char-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 6px;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.char-chip:hover {
+  background: rgba(51, 65, 85, 0.95);
+  border-color: #38bdf8;
+  color: #f8fafc;
+  transform: translateY(-1px);
+}
+
+.char-chip.active {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.35), rgba(2, 132, 199, 0.55));
+  border-color: #38bdf8;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+}
+
+.chip-avatar-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.char-chip.active .chip-avatar-img {
+  border-color: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+.chip-name {
+  line-height: 1;
+}
+
 /* 2. Main Stage Layout (Left Slots | Center 2D Showcase | Right Slots) */
 .stage-layout {
   display: grid;

@@ -363,7 +363,8 @@ function handleGetCharacters(res) {
 }
 
 function handleServeImg(res, filename) {
-  const filePath = path.join(BASE_DIR, 'public', 'img', path.basename(filename));
+  const safeRelPath = path.normalize(filename).replace(/^(\.\.[\/\\])+/, '');
+  const filePath = path.join(BASE_DIR, 'public', 'img', safeRelPath);
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/plain' });

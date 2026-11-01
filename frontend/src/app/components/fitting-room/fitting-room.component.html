@@ -42,6 +42,26 @@
     </div>
   </header>
 
+  <!-- Quick Character Avatar Ribbon -->
+  <div class="character-avatar-ribbon">
+    @for (c of characters(); track c.id) {
+      <button
+        class="char-chip"
+        [class.active]="selectedCharacter()?.id === c.id"
+        (click)="selectCharacter(c)"
+        [title]="c.name + ' (' + c.en_name + ') - ' + c.job"
+      >
+        <img
+          [src]="'/api/icons/' + c.icon_file"
+          [alt]="c.name"
+          class="chip-avatar-img"
+          (error)="onItemIconError($event)"
+        />
+        <span class="chip-name">{{ c.name }}</span>
+      </button>
+    }
+  </div>
+
   <!-- Main Fitting Stage Layout -->
   <div class="stage-layout">
     <!-- Left Equipment Column (7 slots) -->
@@ -61,7 +81,7 @@
                     [src]="'/api/icons/' + item.icon_file"
                     [alt]="item.name"
                     class="item-icon-img"
-                    onerror="this.src='/icons/default_icon.png'"
+                    (error)="onItemIconError($event)"
                   />
                 } @else {
                   <span class="item-emoji">{{ slot.icon }}</span>
@@ -100,31 +120,14 @@
             <div class="rune-light-glow"></div>
           </div>
 
-          <!-- Character Visual Appearance (รูปลักษณ์ตัวละคร) -->
+          <!-- Character Visual Appearance (รูปลักษณ์ตัวละครทางการ) -->
           <div class="character-portrait-box">
-            @if (char.code === 'ha') {
-              <!-- Harang authentic standing cutout matching user screenshot -->
-              <img
-                src="/img/harang_standing.png"
-                [alt]="char.name"
-                class="character-full-img"
-              />
-            } @else {
-              <!-- Character Official Art Card -->
-              <div class="generic-char-showcase">
-                <div class="char-avatar-halo">
-                  <img
-                    [src]="'/api/icons/' + char.icon_file"
-                    [alt]="char.name"
-                    class="char-halo-img"
-                    onerror="this.src='/img/harang_standing.png'"
-                  />
-                </div>
-                <div class="runner-silhouette">
-                  <span class="runner-big-glyph">🏃</span>
-                </div>
-              </div>
-            }
+            <img
+              [src]="getCharacterImageUrl(char)"
+              [alt]="char.name"
+              class="character-full-img"
+              (error)="onCharacterImageError($event, char)"
+            />
           </div>
 
           <!-- Character Info Overlay Card -->
@@ -266,7 +269,7 @@
                     [src]="'/api/icons/' + item.icon_file"
                     [alt]="item.name"
                     class="item-icon-img"
-                    onerror="this.src='/icons/default_icon.png'"
+                    (error)="onItemIconError($event)"
                   />
                 } @else {
                   <span class="item-emoji">{{ slot.icon }}</span>
@@ -365,7 +368,7 @@
                         [src]="'/api/icons/' + item.icon_file"
                         [alt]="item.name"
                         class="card-img"
-                        onerror="this.src='/icons/default_icon.png'"
+                        (error)="onItemIconError($event)"
                       />
                     } @else {
                       <span class="fallback-icon">{{ slot.icon }}</span>

@@ -23,14 +23,14 @@
           [class.active]="currentView() === 'fitting'"
           (click)="currentView.set('fitting')"
         >
-          👗 ห้องแต่งตัว 3D
+          👗 ห้องแต่งตัวตัวละคร
         </button>
       </nav>
 
       <div class="stats-badge">
         <span class="stat-item">📦 <strong>107,870</strong> ไอเทม</span>
         <span class="stat-divider">|</span>
-        <span class="stat-item">🎨 <strong>94,500+</strong> ไอคอน</span>
+        <span class="stat-item">🎨 <strong>97,100+</strong> ไอคอน</span>
       </div>
     </div>
   </header>
@@ -258,7 +258,6 @@
           <div class="card-icon-container">
             @if (item.icon_file) {
               <img
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                 [src]="getIconUrl(item)"
                 [alt]="item.name"
                 class="item-icon"
@@ -396,7 +395,6 @@
           <div class="modal-icon-box">
             @if (it.icon_file) {
               <img
-                src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                 [src]="getIconUrl(it)"
                 [alt]="it.name"
                 class="modal-icon-img"

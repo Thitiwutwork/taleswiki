@@ -276,4 +276,25 @@ export class FittingRoomComponent implements OnInit {
     navigator.clipboard.writeText(text);
     alert('คัดลอกข้อมูลเซ็ตชุดและสเตตัสเรียบร้อยแล้ว!');
   }
+
+  getCharacterImageUrl(char: CharacterInfo | null): string {
+    if (!char) return '/img/harang_standing.png';
+    if (char.image_url) return char.image_url;
+    return `/img/characters/char_${char.id}.png`;
+  }
+
+  onCharacterImageError(event: Event, char: CharacterInfo | null) {
+    if (!char) return;
+    const img = event.target as HTMLImageElement;
+    if (char.icon_file && !img.src.includes(char.icon_file)) {
+      img.src = `/api/icons/${char.icon_file}`;
+    } else {
+      img.src = '/img/harang_standing.png';
+    }
+  }
+
+  onItemIconError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.src = '/api/icons/default_icon.png';
+  }
 }
