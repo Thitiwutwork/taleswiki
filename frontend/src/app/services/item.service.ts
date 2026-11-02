@@ -27,7 +27,7 @@ export class ItemService {
   // Supabase Configuration
   private supabaseUrl = (environment.supabaseUrl || '').replace(/\/+$/, '');
   private supabaseAnonKey = environment.supabaseAnonKey || '';
-  private useSupabase = Boolean(this.supabaseUrl && this.supabaseAnonKey && !this.apiUrl);
+  private useSupabase = Boolean(this.supabaseUrl && this.supabaseAnonKey);
 
   // In-memory items store initialized immediately with pre-bundled items (zero network delay)
   private inMemoryItems: Item[] = [...INITIAL_ITEMS_DATA];
@@ -308,6 +308,49 @@ export class ItemService {
     }
 
     return of(null);
+  }
+
+  getExchangeTargets(item: Item): Observable<Item[]> {
+    if (!item) return of([]);
+
+    if (this.apiUrl && !this.useSupabase) {
+      return this.http.get<{ usages: Item[] }>(`${this.apiUrl}/items/${item.id}/usages`).pipe(
+        map(res => res.usages || []),
+        catchError(() => of([]))
+      );
+    }
+
+    // 1. Ticket / Coupon exact target lookup (e.g. "ตั๋วชุดเต่าทอง" -> "ชุดเต่าทอง")
+    const ticketMatch = item.name.match(/^(?:ตั๋วแลก|ตั๋ว|คูปองแลก|คูปอง|ใบแลก)\s*(.+)$/);
+    if (ticketMatch) {
+      const targetName = ticketMatch[1].trim();
+      return this.getItems({ q: targetName, limit: 12 }).pipe(
+        map(res => (res.items || []).filter(it => it.id !== item.id && !it.name.startsWith('ตั๋ว') && !it.name.startsWith('คูปอง')))
+      );
+    }
+
+    // 2. Theme Coin lookup (e.g. "เหรียญแอนิมอล เวลล์" -> theme items)
+    const coinMatch = item.name.match(/^เหรียญ\s*(.+)$/);
+    if (coinMatch) {
+      const theme = coinMatch[1].trim();
+      return this.getItems({ q: theme, limit: 16 }).pipe(
+        map(res => (res.items || []).filter(it => it.id !== item.id && !it.name.startsWith('เหรียญ')))
+      );
+    }
+
+    // 3. Piece / Fragment lookup (e.g. "ชิ้นส่วนหินแห่งความปรารถนา 20 ปี" -> "หินแห่งความปรารถนา 20 ปี")
+    const pieceMatch = item.name.match(/^(?:ชิ้นส่วน|เศษ)\s*(.+)$/);
+    if (pieceMatch) {
+      const baseName = pieceMatch[1].replace(/\s*\d+\s*ชิ้น$/, '').trim();
+      return this.getItems({ q: baseName, limit: 12 }).pipe(
+        map(res => (res.items || []).filter(it => it.id !== item.id && !it.name.startsWith('ชิ้นส่วน') && !it.name.startsWith('เศษ')))
+      );
+    }
+
+    // 3. General item search
+    return this.getItems({ q: item.name, limit: 12 }).pipe(
+      map(res => (res.items || []).filter(it => it.id !== item.id))
+    );
   }
 
   findDefaultItem(slotKey: string, characterId?: number): Item | null {

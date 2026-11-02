@@ -253,10 +253,10 @@
   @if (!isLoading() && items().length > 0) {
     <div class="items-grid">
       @for (item of items(); track item.id) {
-        <div class="item-card" (click)="openDetail(item)">
+        <div class="item-card" (click)="openDetail(item)" (contextmenu)="openExchangeTab(item, $event)" title="คลิกซ้าย: ดูรายละเอียด / คลิกขวา: ดูของที่แลกได้">
           <!-- Card Image Header -->
           <div class="card-icon-container">
-            @if (item.icon_file) {
+            @if (hasIcon(item)) {
               <img
                 [src]="getIconUrl(item)"
                 [alt]="item.name"
@@ -393,7 +393,7 @@
 
         <div class="modal-header">
           <div class="modal-icon-box">
-            @if (it.icon_file) {
+            @if (hasIcon(it)) {
               <img
                 [src]="getIconUrl(it)"
                 [alt]="it.name"
@@ -452,68 +452,125 @@
             </div>
           }
 
-          <!-- How to Obtain Section -->
-          <div class="modal-section">
-            <h4 class="section-title">📍 วิธีได้รับ / แหล่งที่มาของไอเทม</h4>
-            
-            @if (it.obtain_sources && it.obtain_sources.length > 0) {
-              <div class="obtain-sources-grid">
-                @for (src of it.obtain_sources; track $index) {
-                  <div class="source-card" [class]="'source-card-' + src.type">
-                    <div class="source-card-badge">
-                      <span class="source-badge-tag">{{ src.label }}</span>
-                      @if (src.action) {
-                        <span class="source-badge-action">{{ src.action }}</span>
-                      }
-                    </div>
+          <!-- Recipe & Exchange Dual Tabs -->
+          <div class="modal-recipe-tabs">
+            <button
+              class="recipe-tab-btn"
+              [class.active]="activeModalTab() === 'sources'"
+              (click)="activeModalTab.set('sources')"
+            >
+              📍 วิธีได้รับไอเทม
+            </button>
+            <button
+              class="recipe-tab-btn"
+              [class.active]="activeModalTab() === 'usages'"
+              (click)="selectUsagesTab(it)"
+            >
+              🔄 นำไปแลกอะไรได้ (คลิกขวาในเกม)
+            </button>
+          </div>
 
-                    <div class="source-card-body">
-                      @if (src.target_icon) {
-                        <div class="source-icon-wrap" [class.clickable]="src.target_id" (click)="viewSourceItem(src.target_id)">
-                          <img [src]="getSourceIconUrl(src.target_icon)" [alt]="src.target_name || ''" class="source-icon-img" (error)="onImageError($event)">
-                          <span class="source-fallback-icon" style="display: none;">📦</span>
-                        </div>
-                      } @else {
-                        <div class="source-emoji-icon">
-                          @if (src.type === 'gacha' || src.type === 'box') { 🎁 }
-                          @else if (src.type === 'exchange') { 🪙 }
-                          @else if (src.type === 'craft') { 🧪 }
-                          @else if (src.type === 'shop') { 🏪 }
-                          @else { 📍 }
-                        </div>
-                      }
-
-                      <div class="source-info">
-                        @if (src.target_name) {
-                          <div class="source-target-name" [class.clickable]="src.target_id" (click)="viewSourceItem(src.target_id)">
-                            {{ src.target_name }}
-                            @if (src.count && src.count > 1) {
-                              <span class="source-count-badge">x{{ src.count }}</span>
-                            }
-                          </div>
-                        } @else {
-                          <div class="source-raw-text">{{ src.raw }}</div>
-                        }
-                        
-                        @if (src.target_id) {
-                          <div class="source-hint-text">คลิกเพื่อดูรายละเอียดไอเทมต้นทาง ↗</div>
+          <!-- Tab 1: How to Obtain -->
+          @if (activeModalTab() === 'sources') {
+            <div class="modal-section tab-pane">
+              @if (it.obtain_sources && it.obtain_sources.length > 0) {
+                <div class="obtain-sources-grid">
+                  @for (src of it.obtain_sources; track $index) {
+                    <div class="source-card" [class]="'source-card-' + src.type">
+                      <div class="source-card-badge">
+                        <span class="source-badge-tag">{{ src.label }}</span>
+                        @if (src.action) {
+                          <span class="source-badge-action">{{ src.action }}</span>
                         }
                       </div>
+
+                      <div class="source-card-body">
+                        @if (src.target_icon) {
+                          <div class="source-icon-wrap" [class.clickable]="src.target_id" (click)="viewSourceItem(src.target_id)">
+                            <img [src]="getSourceIconUrl(src.target_icon)" [alt]="src.target_name || ''" class="source-icon-img" (error)="onImageError($event)">
+                            <span class="source-fallback-icon" style="display: none;">📦</span>
+                          </div>
+                        } @else {
+                          <div class="source-emoji-icon">
+                            @if (src.type === 'gacha' || src.type === 'box') { 🎁 }
+                            @else if (src.type === 'exchange') { 🪙 }
+                            @else if (src.type === 'craft') { 🧪 }
+                            @else if (src.type === 'shop') { 🏪 }
+                            @else { 📍 }
+                          </div>
+                        }
+
+                        <div class="source-info">
+                          @if (src.target_name) {
+                            <div class="source-target-name" [class.clickable]="src.target_id" (click)="viewSourceItem(src.target_id)">
+                              {{ src.target_name }}
+                              @if (src.count && src.count > 1) {
+                                <span class="source-count-badge">x{{ src.count }}</span>
+                              }
+                            </div>
+                          } @else {
+                            <div class="source-raw-text">{{ src.raw }}</div>
+                          }
+                          
+                          @if (src.target_id) {
+                            <div class="source-hint-text">คลิกเพื่อดูรายละเอียดไอเทมต้นทาง ↗</div>
+                          }
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                }
-              </div>
-            } @else {
-              <div class="obtain-methods-list">
-                @for (m of it.obtain_methods; track m) {
-                  <div class="obtain-row" [ngClass]="getSourceBadgeClass(m)">
-                    <span class="obtain-check">✔</span>
-                    <span class="obtain-row-text">{{ m }}</span>
-                  </div>
-                }
-              </div>
-            }
-          </div>
+                  }
+                </div>
+              } @else if (it.obtain_methods && it.obtain_methods.length > 0) {
+                <div class="obtain-methods-list">
+                  @for (m of it.obtain_methods; track m) {
+                    <div class="obtain-row" [ngClass]="getSourceBadgeClass(m)">
+                      <span class="obtain-check">✔</span>
+                      <span class="obtain-row-text">{{ m }}</span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="empty-recipe-state">
+                  <p>ยังไม่มีข้อมูลวิธีได้รับของไอเทมนี้ในระบบ</p>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Tab 2: What this item can be exchanged for (In-game right-click) -->
+          @if (activeModalTab() === 'usages') {
+            <div class="modal-section tab-pane">
+              @if (isLoadingUsages()) {
+                <div class="usages-loading">
+                  <div class="spinner-sm"></div>
+                  <span>กำลังค้นหารายการที่สามารถแลกได้...</span>
+                </div>
+              } @else if (itemUsages().length > 0) {
+                <div class="usages-grid">
+                  @for (target of itemUsages(); track target.id) {
+                    <div class="usage-card" (click)="openDetail(target)">
+                      <div class="usage-icon-wrap">
+                        @if (hasIcon(target)) {
+                          <img [src]="getIconUrl(target)" [alt]="target.name" class="usage-icon-img" (error)="onImageError($event)">
+                        } @else {
+                          <span class="usage-fallback-icon">{{ getCategoryIcon(target.position_id) }}</span>
+                        }
+                      </div>
+                      <div class="usage-details">
+                        <span class="usage-slot">{{ target.position_name }}</span>
+                        <h5 class="usage-name" [title]="target.name">{{ target.name }}</h5>
+                        <span class="usage-action-hint">คลิกเพื่อดูรายละเอียด ↗</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="empty-recipe-state">
+                  <p>ไอเทมนี้ไม่มีรายการแลกเปลี่ยนต่อเนื่อง หรือเป็นไอเทมสวมใส่ขั้นสุดท้ายแล้ว</p>
+                </div>
+              }
+            </div>
+          }
         </div>
 
         <div class="modal-footer">

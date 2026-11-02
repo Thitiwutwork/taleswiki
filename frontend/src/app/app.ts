@@ -7,6 +7,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { FittingRoomComponent } from './components/fitting-room/fitting-room.component';
 import { FILTERS_DATA } from './data/filters.data';
 import { INITIAL_ITEMS_DATA } from './data/initial-items.data';
+import { ICON_FALLBACKS } from './data/icon-fallbacks.data';
 
 const LANDMARK_NEEDLES = [
   { name: 'เข็มแลนด์มาร์คอานูบิส', id: 129759, icon: 'all_9999_3852.png' },
@@ -64,6 +65,9 @@ export class App implements OnInit {
 
   // Modal State
   selectedItem = signal<Item | null>(null);
+  activeModalTab = signal<'sources' | 'usages'>('sources');
+  itemUsages = signal<Item[]>([]);
+  isLoadingUsages = signal<boolean>(false);
 
   // Filter lists initialized instantly (0ms delay)
   positions = signal<FilterOption[]>([
@@ -136,6 +140,12 @@ export class App implements OnInit {
         this.totalItems.set(res.total);
         this.totalPages.set(res.totalPages);
         this.isLoading.set(false);
+        // Ensure currentPage never exceeds totalPages (e.g. after filter change)
+        if (this.currentPage() > res.totalPages && res.totalPages > 0) {
+          this.currentPage.set(res.totalPages);
+          this.fetchItems();
+          return;
+        }
         // Scroll to top of results
         window.scrollTo({ top: 0, behavior: 'smooth' });
       },
@@ -212,8 +222,8 @@ export class App implements OnInit {
       .map(m => this.cleanTags(m))
       .filter(m => {
         if (!m) return false;
-        if (m.match(/(?:1,000,000|999,999)\s*(?:Cash|TR)/i)) return false;
-        if (m.match(/ร้านค้าในเกม.*(?:1,000,000|999,999)/i)) return false;
+        if (m.match(/(?:1,?000,?000|999,?999)\s*(?:Cash|TR)/i)) return false;
+        if (m.match(/ร้านค้าในเกม.*(?:1,?000,?000|999,?999)/i)) return false;
         return true;
       });
   }
@@ -222,8 +232,9 @@ export class App implements OnInit {
     if (!sources || !Array.isArray(sources)) return [];
     return sources.filter(s => {
       const raw = ((s.raw || '') + ' ' + (s.target_name || ''));
-      if (raw.match(/(?:1,000,000|999,999)\s*(?:Cash|TR)/i)) return false;
-      if (raw.match(/ร้านค้าในเกม.*(?:1,000,000|999,999)/i)) return false;
+      if (raw.match(/(?:1,?000,?000|999,?999)\s*(?:Cash|TR)/i)) return false;
+      if (raw.match(/ร้านค้าในเกม.*(?:1,?000,?000|999,?999)/i)) return false;
+      if (s.type === 'shop' && s.count && s.count >= 999999) return false;
       return true;
     });
   }
@@ -256,6 +267,8 @@ export class App implements OnInit {
     };
 
     this.selectedItem.set(itemCopy);
+    this.activeModalTab.set('sources');
+    this.itemUsages.set([]);
 
     // 2. Quantity bundle fallback (e.g. "ชิ้นส่วนหินแห่งความปรารถนา 20 ปี 10 ชิ้น" -> "ชิ้นส่วนหินแห่งความปรารถนา 20 ปี")
     if (cleanSources.length === 0) {
@@ -282,11 +295,71 @@ export class App implements OnInit {
 
   closeDetail() {
     this.selectedItem.set(null);
+    this.itemUsages.set([]);
+  }
+
+  selectUsagesTab(item: Item) {
+    this.activeModalTab.set('usages');
+    if (this.itemUsages().length === 0) {
+      this.loadUsages(item);
+    }
+  }
+
+  openExchangeTab(item: Item, event?: MouseEvent) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.openDetail(item);
+    this.activeModalTab.set('usages');
+    this.loadUsages(item);
+  }
+
+  loadUsages(item: Item) {
+    this.isLoadingUsages.set(true);
+    this.itemUsages.set([]);
+
+    // Special Landmark Needle: expands to all 25 landmark themes
+    if (item.name.includes('เข็มแลนด์มาร์คพิเศษ')) {
+      const needles: Item[] = LANDMARK_NEEDLES.map(n => ({
+        id: n.id,
+        name: n.name,
+        category_id: 0,
+        character_id: 0,
+        character_name: 'ทุกตัวละคร (All)',
+        position_id: 9999,
+        position_name: 'เข็มแลนด์มาร์ค',
+        item_kind: 0,
+        level_req: 0,
+        game_money: 0,
+        cash: 0,
+        description: `ใช้เข็มแลนด์มาร์คพิเศษ 1 ชิ้น แลกรับ ${n.name}`,
+        stats: [],
+        obtain_methods: ['แลกเปลี่ยนโดยใช้: เข็มแลนด์มาร์คพิเศษ'],
+        icon_file: n.icon,
+        icon_url: null
+      }));
+      this.itemUsages.set(needles);
+      this.isLoadingUsages.set(false);
+      return;
+    }
+
+    this.itemService.getExchangeTargets(item).subscribe({
+      next: (targets) => {
+        this.itemUsages.set(targets);
+        this.isLoadingUsages.set(false);
+      },
+      error: () => {
+        this.itemUsages.set([]);
+        this.isLoadingUsages.set(false);
+      }
+    });
   }
 
   getIconUrl(item: Item): string {
-    if (item.icon_file) {
-      return this.itemService.getIconUrl(item.icon_file);
+    const icon = item.icon_file || ICON_FALLBACKS[item.id];
+    if (icon) {
+      return this.itemService.getIconUrl(icon);
     }
     const name = item.name || '';
     if (name.includes('แอนิมอล เวลล์')) {
@@ -296,6 +369,10 @@ export class App implements OnInit {
       return this.itemService.getIconUrl('all_9999_3722.png');
     }
     return this.itemService.getIconUrl(null);
+  }
+
+  hasIcon(item: Item): boolean {
+    return Boolean(item.icon_file || ICON_FALLBACKS[item.id] || item.name?.includes('แอนิมอล เวลล์'));
   }
 
   onImageError(event: Event) {
