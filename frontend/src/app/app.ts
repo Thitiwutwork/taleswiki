@@ -198,6 +198,10 @@ export class App implements OnInit {
 
   onImageError(event: Event) {
     const img = event.target as HTMLImageElement;
+    if (img.src && img.src.includes('cdn.jsdelivr.net')) {
+      img.src = img.src.replace('https://cdn.jsdelivr.net/gh/thitiwutwork/taleswiki@main', 'https://raw.githubusercontent.com/thitiwutwork/taleswiki/main');
+      return;
+    }
     img.style.display = 'none';
     const fallback = img.nextElementSibling as HTMLElement;
     if (fallback) {

@@ -308,13 +308,24 @@ export class ItemService {
   getIconUrl(iconFile: string | null | undefined): string {
     if (!iconFile) return '/icons/default_icon.png';
     if (iconFile.startsWith('http://') || iconFile.startsWith('https://')) return iconFile;
-    if (iconFile.startsWith('/')) return iconFile;
-    return `/icons/${iconFile}`;
+    const cleanFile = iconFile.startsWith('/') ? iconFile.slice(1) : iconFile;
+
+    // If local server is running on localhost, use local /icons/
+    if (this.isLocalServer) {
+      return `/icons/${cleanFile}`;
+    }
+
+    // On Vercel / Production: Use fast jsDelivr CDN from GitHub repository
+    return `https://cdn.jsdelivr.net/gh/thitiwutwork/taleswiki@main/public/icons/${cleanFile}`;
   }
 
   getImgUrl(imgPath: string | null | undefined): string {
     if (!imgPath) return '';
     if (imgPath.startsWith('http://') || imgPath.startsWith('https://')) return imgPath;
-    return imgPath.startsWith('/') ? imgPath : `/${imgPath}`;
+    const cleanPath = imgPath.startsWith('/') ? imgPath.slice(1) : imgPath;
+    if (this.isLocalServer) {
+      return `/${cleanPath}`;
+    }
+    return `https://cdn.jsdelivr.net/gh/thitiwutwork/taleswiki@main/frontend/public/${cleanPath}`;
   }
 }
