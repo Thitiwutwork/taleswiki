@@ -83,7 +83,9 @@ export class App implements OnInit {
   }
 
   fetchItems() {
-    this.isLoading.set(true);
+    if (this.items().length === 0) {
+      this.isLoading.set(true);
+    }
     this.itemService.getItems({
       q: this.searchQuery(),
       position: this.selectedPosition(),

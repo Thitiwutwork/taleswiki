@@ -15,7 +15,7 @@ export interface CharacterInfo {
   story: string;
   stats: CharacterStats;
   abilities: string[];
-  image_url: string;
+  image_url: string | null;
   icon_file: string;
 }
 

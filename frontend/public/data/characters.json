@@ -17,7 +17,7 @@
       "ระยะเวลาโกรธ +5%"
     ],
     "icon_file": "cw_character_000.png",
-    "image_url": "/img/characters/char_1.png"
+    "image_url": "/img/characters_standing/cw.png"
   },
   {
     "id": 2,
@@ -37,7 +37,7 @@
       "เพิ่มค่าความโกรธ +5%"
     ],
     "icon_file": "mm_character_000.png",
-    "image_url": "/img/characters/char_2.png"
+    "image_url": "/img/characters_standing/mm.png"
   },
   {
     "id": 3,
@@ -57,7 +57,7 @@
       "หลบหลีกโจมตีโกรธ +5%"
     ],
     "icon_file": "rn_character_000.png",
-    "image_url": "/img/characters/char_3.png"
+    "image_url": "/img/characters_standing/rn.png"
   },
   {
     "id": 4,
@@ -77,7 +77,7 @@
       "ลดเวลาแปลงร่างโกรธ -5%"
     ],
     "icon_file": "bb_character_000.png",
-    "image_url": "/img/characters/char_4.png"
+    "image_url": "/img/characters_standing/bb.png"
   },
   {
     "id": 5,
@@ -97,7 +97,7 @@
       "ลดเวลาลุกเมื่อชนสิ่งกีดขวาง +5%"
     ],
     "icon_file": "dn_character_000.png",
-    "image_url": "/img/characters/char_5.png"
+    "image_url": "/img/characters_standing/dn.png"
   },
   {
     "id": 6,
@@ -117,7 +117,7 @@
       "ลดเวลาลุกเมื่อชนสิ่งกีดขวาง +5%"
     ],
     "icon_file": "ns_character_000.png",
-    "image_url": "/img/characters/char_6.png"
+    "image_url": null
   },
   {
     "id": 7,
@@ -137,7 +137,7 @@
       "พลังโจมตี แรง +10"
     ],
     "icon_file": "mk_character_000.png",
-    "image_url": "/img/characters/char_7.png"
+    "image_url": "/img/characters_standing/mk.png"
   },
   {
     "id": 8,
@@ -157,7 +157,7 @@
       "ระยะเวลาโกรธ +5%"
     ],
     "icon_file": "rg_character_000.png",
-    "image_url": "/img/characters/char_8.png"
+    "image_url": "/img/characters_standing/rg.png"
   },
   {
     "id": 9,
@@ -177,7 +177,7 @@
       "เพิ่มค่าความโกรธ +5%"
     ],
     "icon_file": "bd_character_000.png",
-    "image_url": "/img/characters/char_9.png"
+    "image_url": "/img/characters_standing/bd.png"
   },
   {
     "id": 10,
@@ -197,7 +197,7 @@
       "โบนัส EXP โดยไม่เกี่ยวกับแพ้ชนะ +5"
     ],
     "icon_file": "ka_character_000.png",
-    "image_url": "/img/characters/char_10.png"
+    "image_url": "/img/characters_standing/ka.png"
   },
   {
     "id": 11,
@@ -217,7 +217,7 @@
       "อัตราหลบสิ่งกีดขวาง 1 ครั้ง +5%"
     ],
     "icon_file": "yk_character_000.png",
-    "image_url": "/img/characters/char_11.png"
+    "image_url": "/img/characters_standing/yk.png"
   },
   {
     "id": 12,
@@ -237,7 +237,7 @@
       "อัตราหลบสิ่งกีดขวาง 1 ครั้ง +5%"
     ],
     "icon_file": "kr_character_000.png",
-    "image_url": "/img/characters/char_12.png"
+    "image_url": "/img/characters_standing/kr.png"
   },
   {
     "id": 13,
@@ -257,7 +257,7 @@
       "ระยะเวลาโกรธ +5%"
     ],
     "icon_file": "ab_character_000.png",
-    "image_url": "/img/characters/char_13.png"
+    "image_url": "/img/characters_standing/ab.png"
   },
   {
     "id": 14,
@@ -277,7 +277,7 @@
       "เพิ่มค่าความโกรธ +5%"
     ],
     "icon_file": "hr_character_000.png",
-    "image_url": "/img/characters/char_14.png"
+    "image_url": null
   },
   {
     "id": 15,
@@ -297,7 +297,7 @@
       "หลบหลีกการโจมตีด้วยการโกรธ +5%"
     ],
     "icon_file": "vr_character_000.png",
-    "image_url": "/img/characters/char_15.png"
+    "image_url": "/img/characters_standing/vr.png"
   },
   {
     "id": 16,
@@ -317,7 +317,7 @@
       "ไม่เกี่ยวกับแพ้ชนะ โบนัส EXP +5"
     ],
     "icon_file": "og_character_000.png",
-    "image_url": "/img/characters/char_16.png"
+    "image_url": "/img/characters_standing/og.png"
   },
   {
     "id": 17,
@@ -338,7 +338,7 @@
       "เกจแดซ +25%"
     ],
     "icon_file": "rg2_character_000.png",
-    "image_url": "/img/characters/char_17.png"
+    "image_url": "/img/characters_standing/rg2.png"
   },
   {
     "id": 18,
@@ -358,7 +358,7 @@
       "ระยะเวลาโกรธ +5%"
     ],
     "icon_file": "sh_character_000.png",
-    "image_url": "/img/characters/char_18.png"
+    "image_url": "/img/characters_standing/sh.png"
   },
   {
     "id": 19,
@@ -378,7 +378,7 @@
       "โชค +5%"
     ],
     "icon_file": "lc_character_000.png",
-    "image_url": "/img/characters/char_19.png"
+    "image_url": null
   },
   {
     "id": 20,
@@ -400,7 +400,7 @@
       "เพิ่มพลังโจมตีบอสประเภทสัตว์ +3%"
     ],
     "icon_file": "mh_character_000.png",
-    "image_url": "/img/characters/char_20.png"
+    "image_url": null
   },
   {
     "id": 21,
@@ -420,7 +420,7 @@
       "โชค +5%"
     ],
     "icon_file": "kn_character_000.png",
-    "image_url": "/img/characters/char_21.png"
+    "image_url": null
   },
   {
     "id": 22,
@@ -440,7 +440,7 @@
       "ลดระยะเวลาหมดแรง +5%"
     ],
     "icon_file": "r_character_000.png",
-    "image_url": "/img/characters/char_22.png"
+    "image_url": null
   },
   {
     "id": 23,
@@ -460,7 +460,7 @@
       "โอกาสหลบหลีก 1 ครั้ง เมื่อชนสิ่งกีดขวาง +5%"
     ],
     "icon_file": "ha_character_000.png",
-    "image_url": "/img/characters/char_23.png"
+    "image_url": "/img/characters_standing/ha.png"
   },
   {
     "id": 24,
@@ -480,7 +480,7 @@
       "ลดระยะเวลาในการเปลี่ยนเป็นโกรธ +5%"
     ],
     "icon_file": "la_character_000.png",
-    "image_url": "/img/characters/char_24.png"
+    "image_url": "/img/characters_standing/la.png"
   },
   {
     "id": 25,
@@ -502,7 +502,7 @@
       "เลเวลผู้เล่น×โบนัส TR +3%"
     ],
     "icon_file": "el_character_000.png",
-    "image_url": "/img/characters/char_25.png"
+    "image_url": null
   },
   {
     "id": 26,
@@ -524,7 +524,7 @@
       "เลเวลผู้เล่นxโบนัส TR +2%"
     ],
     "icon_file": "ca_character_000.png",
-    "image_url": "/img/characters/char_26.png"
+    "image_url": null
   },
   {
     "id": 27,
@@ -544,7 +544,7 @@
       "ระยะเวลาโกรธ +5%"
     ],
     "icon_file": "yr_character_000.png",
-    "image_url": "/img/characters/char_27.png"
+    "image_url": null
   },
   {
     "id": 28,
@@ -564,7 +564,7 @@
       "พลังโจมตี +10"
     ],
     "icon_file": "vrd_character_000.png",
-    "image_url": "/img/characters/char_28.png"
+    "image_url": null
   },
   {
     "id": 29,
@@ -584,7 +584,7 @@
       "ความเร็วในการว่ายน้ำ +15"
     ],
     "icon_file": "xn_character_000.png",
-    "image_url": "/img/characters/char_29.png"
+    "image_url": null
   },
   {
     "id": 30,
@@ -604,7 +604,7 @@
       "เพิ่มเกจแดชสูงสุด +3%"
     ],
     "icon_file": "rl_character_000.png",
-    "image_url": "/img/characters/char_30.png"
+    "image_url": null
   },
   {
     "id": 31,
@@ -624,7 +624,7 @@
       "EXP ที่ได้รับสูงสุดต่อสนาม +50"
     ],
     "icon_file": "do_character_000.png",
-    "image_url": "/img/characters/char_31.png"
+    "image_url": null
   },
   {
     "id": 32,
@@ -644,7 +644,7 @@
       "โอกาสหลบหลีก 1 ครั้ง เมื่อชนกับสิ่งกีดขวาง +5%"
     ],
     "icon_file": "ce_character_000.png",
-    "image_url": "/img/characters/char_32.png"
+    "image_url": null
   },
   {
     "id": 33,
@@ -664,7 +664,7 @@
       "เพิ่มเกจแดชสูงสุด +3%"
     ],
     "icon_file": "kh_character_000.png",
-    "image_url": "/img/characters/char_33.png"
+    "image_url": null
   },
   {
     "id": 34,
@@ -684,7 +684,7 @@
       "เพิ่มแรงพุ่งไปข้างหน้า +1%"
     ],
     "icon_file": "sd_character_000.png",
-    "image_url": "/img/characters/char_34.png"
+    "image_url": null
   },
   {
     "id": 35,
@@ -706,7 +706,7 @@
       "ใช้กรอบคำพูดเฉพาะของ Zanmang Loopy"
     ],
     "icon_file": "zm_character_000.png",
-    "image_url": "/img/characters/char_35.png"
+    "image_url": null
   },
   {
     "id": 36,
@@ -726,7 +726,7 @@
       "โอกาสป้องกันไก่/เพนกวิน +3%"
     ],
     "icon_file": "jg_character_000.png",
-    "image_url": "/img/characters/char_36.png"
+    "image_url": "/img/characters_standing/jg.png"
   },
   {
     "id": 37,
@@ -746,7 +746,7 @@
       "ต้านทานไฟฟ้า +3%"
     ],
     "icon_file": "mg_character_000.png",
-    "image_url": "/img/characters/char_37.png"
+    "image_url": "/img/characters_standing/mg.png"
   },
   {
     "id": 38,
@@ -766,7 +766,7 @@
       "เพิ่มค่าความโกรธ +6%"
     ],
     "icon_file": "char_38.png",
-    "image_url": "/img/characters/char_38.png"
+    "image_url": "/img/characters_standing/yr_ne.png"
   },
   {
     "id": 39,
@@ -786,7 +786,7 @@
       "เมื่อแลนดิ้งแดชสำเร็จเพิ่มระยะเวลาในการแดช +1"
     ],
     "icon_file": "cs_character_000.png",
-    "image_url": "/img/characters/char_39.png"
+    "image_url": "/img/characters_standing/cs.png"
   },
   {
     "id": 40,
@@ -807,7 +807,7 @@
       "ระยะเวลาแปลงร่างโกรธลดลง +3%"
     ],
     "icon_file": "char_40.png",
-    "image_url": "/img/characters/char_40.png"
+    "image_url": "/img/characters_standing/hu_ma.png"
   },
   {
     "id": 41,
@@ -827,7 +827,7 @@
       "ความน่าจะเป็นในการทำงานของ Dash เมื่อชนสิ่งกีดขวาง +3%"
     ],
     "icon_file": "mr_character_000.png",
-    "image_url": "/img/characters/char_41.png"
+    "image_url": null
   },
   {
     "id": 42,
@@ -847,7 +847,7 @@
       "เมื่อวิ่งกับคู่รัก คู่รักจะได้รับคะแนน +3%"
     ],
     "icon_file": "cb_character_000.png",
-    "image_url": "/img/characters/char_42.png"
+    "image_url": null
   },
   {
     "id": 43,
@@ -870,7 +870,7 @@
       "แต้มสนับสนุนแชนแนลลาสต์ เคออส +100%"
     ],
     "icon_file": "tt_character_000.png",
-    "image_url": "/img/characters/char_43.png"
+    "image_url": null
   },
   {
     "id": 49,
@@ -891,6 +891,6 @@
       "ความเสียหายบอสสัตว์เพิ่มเติม +8%"
     ],
     "icon_file": "char_49.png",
-    "image_url": "/img/characters/char_49.png"
+    "image_url": null
   }
 ]

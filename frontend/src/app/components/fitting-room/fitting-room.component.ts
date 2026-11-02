@@ -198,12 +198,11 @@ export class FittingRoomComponent implements OnInit {
   }
 
   private loadDefaultOutfit() {
-    this.itemService.getItems({ q: 'ที่คาดผมหูแมวดำ', limit: 1 }).subscribe(r => {
-      if (r.items?.length) this.equipItem('head', r.items[0]);
-    });
-    this.itemService.getItems({ q: 'พลาสเตอร์เด็กซน', limit: 1 }).subscribe(r => {
-      if (r.items?.length) this.equipItem('face_lower', r.items[0]);
-    });
+    const charId = this.selectedCharacter()?.id;
+    const defaultHead = this.itemService.findDefaultItem('head', charId);
+    if (defaultHead) this.equipItem('head', defaultHead);
+    const defaultFace = this.itemService.findDefaultItem('face_lower', charId);
+    if (defaultFace) this.equipItem('face_lower', defaultFace);
   }
 
   openSlotPicker(slot: EquipSlotDef) {
@@ -321,8 +320,16 @@ export class FittingRoomComponent implements OnInit {
   onCharacterImageError(event: Event, char: CharacterInfo | null) {
     if (!char) return;
     const img = event.target as HTMLImageElement;
-    if (!img.src.includes('harang_standing.png')) {
-      img.src = '/img/harang_standing.png';
+    const fallback = this.getIconUrl(char.icon_file);
+    if (img.src !== fallback) {
+      img.src = fallback;
+    }
+  }
+
+  onSkinImageError(event: Event, skin: RoomSkin) {
+    const img = event.target as HTMLImageElement;
+    if (!img.src.includes('bg_myroom.jpg')) {
+      img.src = '/img/skins/bg_myroom.jpg';
     }
   }
 

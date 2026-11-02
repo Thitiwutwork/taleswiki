@@ -132,15 +132,16 @@
 
           <!-- Character Visual Appearance (รูปลักษณ์ตัวละครทางการ) -->
           <div class="character-portrait-box">
-            @if (char.code === 'ha') {
-              <!-- Authentic Harang 2D standing character art -->
+            @if (char.image_url) {
+              <!-- Authentic 2D Standing Character Artwork -->
               <img
-                src="/img/harang_standing.png"
+                [src]="char.image_url"
                 [alt]="char.name"
                 class="character-full-img"
+                (error)="onCharacterImageError($event, char)"
               />
             } @else {
-              <!-- Official Runner Avatar & Emblem Showcase -->
+              <!-- Official Runner Avatar & Emblem Showcase for collab/special chars -->
               <div class="generic-char-showcase">
                 <div class="char-avatar-halo">
                   <img
@@ -466,7 +467,13 @@
                 (click)="selectSkin(skin)"
               >
                 <div class="skin-preview-wrap">
-                  <img [src]="skin.url" [alt]="skin.name" class="skin-thumb" />
+                  <img
+                    [src]="skin.url"
+                    [alt]="skin.name"
+                    class="skin-thumb"
+                    loading="lazy"
+                    (error)="onSkinImageError($event, skin)"
+                  />
                   @if (selectedSkin()?.id === skin.id) {
                     <div class="skin-selected-badge">✓ ใช้งานอยู่</div>
                   }
