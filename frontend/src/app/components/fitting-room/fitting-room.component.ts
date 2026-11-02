@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
 import { ItemService } from '../../services/item.service';
 import { Item } from '../../models/item.model';
 import { CharacterInfo, RoomSkin } from '../../models/character.model';
+import { CHARACTERS_DATA } from '../../data/characters.data';
+import { ROOM_SKINS_DATA } from '../../data/skins.data';
 
 export interface EquipSlotDef {
   key: string;
@@ -29,15 +31,19 @@ export interface EquipSlotDef {
 export class FittingRoomComponent implements OnInit {
   private itemService = inject(ItemService);
 
-  // Character list loaded from /api/characters
-  characters = signal<CharacterInfo[]>([]);
-  selectedCharacter = signal<CharacterInfo | null>(null);
+  // Character list initialized instantly with bundled data (0ms delay)
+  characters = signal<CharacterInfo[]>(CHARACTERS_DATA);
+  selectedCharacter = signal<CharacterInfo | null>(
+    CHARACTERS_DATA.find(c => c.code === 'ha') || CHARACTERS_DATA[0]
+  );
   activeSubTab = signal<'char' | 'avatar' | 'costume'>('char');
   showLoreModal = signal<boolean>(false);
 
-  // Stage Background Skins (สกินห้องแต่งตัว)
-  skins = signal<RoomSkin[]>([]);
-  selectedSkin = signal<RoomSkin | null>(null);
+  // Stage Background Skins (สกินห้องแต่งตัว) initialized instantly (0ms delay)
+  skins = signal<RoomSkin[]>(ROOM_SKINS_DATA);
+  selectedSkin = signal<RoomSkin | null>(
+    ROOM_SKINS_DATA.find(s => s.id === 'skin_royal_academy') || ROOM_SKINS_DATA[0]
+  );
   showSkinModal = signal<boolean>(false);
 
   // Slot Definitions matching in-game dressing room

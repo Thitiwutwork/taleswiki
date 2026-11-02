@@ -5,6 +5,8 @@ import { ItemService } from './services/item.service';
 import { Item, FilterOption } from './models/item.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { FittingRoomComponent } from './components/fitting-room/fitting-room.component';
+import { FILTERS_DATA } from './data/filters.data';
+import { INITIAL_ITEMS_DATA } from './data/initial-items.data';
 
 @Component({
   selector: 'app-root',
@@ -18,9 +20,9 @@ export class App implements OnInit {
   // View Navigation: 'search' | 'fitting'
   currentView = signal<'search' | 'fitting'>('search');
 
-  // State Signals
-  items = signal<Item[]>([]);
-  totalItems = signal<number>(0);
+  // State Signals initialized instantly with pre-bundled data (0ms delay)
+  items = signal<Item[]>(INITIAL_ITEMS_DATA);
+  totalItems = signal<number>(INITIAL_ITEMS_DATA.length);
   totalPages = signal<number>(1);
   currentPage = signal<number>(1);
   isLoading = signal<boolean>(false);
@@ -35,10 +37,16 @@ export class App implements OnInit {
   // Modal State
   selectedItem = signal<Item | null>(null);
 
-  // Filter lists from API
-  positions = signal<FilterOption[]>([]);
-  characters = signal<FilterOption[]>([]);
-  sources = signal<FilterOption[]>([]);
+  // Filter lists initialized instantly (0ms delay)
+  positions = signal<FilterOption[]>([
+    { id: 'all', name: 'ทุกหมวดหมู่ (All)', count: undefined },
+    ...FILTERS_DATA.positions
+  ]);
+  characters = signal<FilterOption[]>([
+    { id: 'all', name: 'ทุกตัวละคร (All)', count: undefined },
+    ...FILTERS_DATA.characters
+  ]);
+  sources = signal<FilterOption[]>(FILTERS_DATA.sources);
 
   // Search debounce
   private searchSubject = new Subject<string>();

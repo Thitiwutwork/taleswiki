@@ -3,6 +3,10 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of, map, shareReplay } from 'rxjs';
 import { Item, ItemSearchResponse, FiltersResponse } from '../models/item.model';
 import { CharacterInfo, RoomSkin } from '../models/character.model';
+import { CHARACTERS_DATA } from '../data/characters.data';
+import { ROOM_SKINS_DATA } from '../data/skins.data';
+import { FILTERS_DATA } from '../data/filters.data';
+import { INITIAL_ITEMS_DATA } from '../data/initial-items.data';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +15,7 @@ export class ItemService {
   private http = inject(HttpClient);
 
   // Environment check: if running locally on port 4200/3000 with Node server, use backend API.
-  // When running on Vercel or any static host, use high-speed static CDN data directly (0ms network failure lag).
+  // When running on Vercel or any static host, use high-speed inlined data directly (0ms network delay).
   private isLocalServer = typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
     (window.location.port === '3000' || window.location.port === '4200');
@@ -31,52 +35,42 @@ export class ItemService {
   }
 
   getCharacters(): Observable<CharacterInfo[]> {
-    if (!this.charactersCache$) {
-      const src$ = this.apiUrl
-        ? this.http.get<CharacterInfo[]>(`${this.apiUrl}/characters`).pipe(
-            catchError(() => this.http.get<CharacterInfo[]>('/data/characters.json'))
-          )
-        : this.http.get<CharacterInfo[]>('/data/characters.json');
-
-      this.charactersCache$ = src$.pipe(shareReplay(1));
+    if (this.apiUrl) {
+      if (!this.charactersCache$) {
+        this.charactersCache$ = this.http.get<CharacterInfo[]>(`${this.apiUrl}/characters`).pipe(
+          catchError(() => of(CHARACTERS_DATA)),
+          shareReplay(1)
+        );
+      }
+      return this.charactersCache$;
     }
-    return this.charactersCache$;
+    // Instant bundled data: 0ms
+    return of(CHARACTERS_DATA);
   }
 
   getRoomSkins(): Observable<RoomSkin[]> {
-    if (!this.roomSkinsCache$) {
-      this.roomSkinsCache$ = this.http.get<RoomSkin[]>('/data/room_skins.json').pipe(
-        catchError(() => of([
-          {
-            id: 'skin_royal_academy',
-            name: 'โรงเรียนเวทมนตร์ (Royal Academy)',
-            filename: 'skin_royal_academy.jpg',
-            url: '/img/skins/skin_royal_academy.jpg'
-          }
-        ])),
-        shareReplay(1)
-      );
-    }
-    return this.roomSkinsCache$;
+    // Instant bundled data: 0ms
+    return of(ROOM_SKINS_DATA);
   }
 
   getFilters(): Observable<FiltersResponse> {
-    if (!this.filtersCache$) {
-      const src$ = this.apiUrl
-        ? this.http.get<FiltersResponse>(`${this.apiUrl}/filters`).pipe(
-            catchError(() => this.http.get<FiltersResponse>('/data/filters.json'))
-          )
-        : this.http.get<FiltersResponse>('/data/filters.json');
-
-      this.filtersCache$ = src$.pipe(shareReplay(1));
+    if (this.apiUrl) {
+      if (!this.filtersCache$) {
+        this.filtersCache$ = this.http.get<FiltersResponse>(`${this.apiUrl}/filters`).pipe(
+          catchError(() => of(FILTERS_DATA)),
+          shareReplay(1)
+        );
+      }
+      return this.filtersCache$;
     }
-    return this.filtersCache$;
+    // Instant bundled data: 0ms
+    return of(FILTERS_DATA);
   }
 
   private loadItemsSample(): Observable<Item[]> {
     if (!this.itemsSampleCache$) {
       this.itemsSampleCache$ = this.http.get<Item[]>('/data/items_sample.json').pipe(
-        catchError(() => of([])),
+        catchError(() => of(INITIAL_ITEMS_DATA)),
         shareReplay(1)
       );
     }
