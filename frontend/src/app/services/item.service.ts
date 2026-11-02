@@ -32,6 +32,7 @@ export class ItemService {
   // In-memory items store initialized immediately with pre-bundled items (zero network delay)
   private inMemoryItems: Item[] = [...INITIAL_ITEMS_DATA];
   private isFullSampleLoaded = false;
+  private cachedTotals = new Map<string, number>();
 
   constructor() {
     // If not using local API and not using Supabase, pre-load sample items
@@ -118,12 +119,7 @@ export class ItemService {
 
     // 2. If Supabase is configured, query Supabase REST API (Lightning Fast Server-side Pagination)
     if (this.useSupabase) {
-      return this.querySupabase(params).pipe(
-        catchError(err => {
-          console.warn('[ItemService] Supabase query failed, falling back to in-memory:', err);
-          return of(this.filterInMemory(params));
-        })
-      );
+      return this.querySupabase(params);
     }
 
     // 3. Fallback: High-speed synchronous in-memory filter
@@ -188,10 +184,18 @@ export class ItemService {
       }
     }
 
+    const filterKey = `${params.q || ''}_${params.position || 'all'}_${params.character || 'all'}_${params.source || 'all'}_${params.has_stats || false}`;
+    const isDefaultFilter = !params.q && (params.position === 'all' || !params.position) && (params.character === 'all' || !params.character) && (params.source === 'all' || !params.source) && !params.has_stats;
+    const hasCachedTotal = this.cachedTotals.has(filterKey) || isDefaultFilter;
+    const knownTotal = this.cachedTotals.get(filterKey) || (isDefaultFilter ? 107870 : 0);
+
+    // Fast paging: only calculate full table count on page 1. When jumping pages, count=none avoids timeout.
+    const preferHeader = (page === 1 || !hasCachedTotal) ? 'count=exact' : 'count=none';
+
     const headers = new HttpHeaders({
       'apikey': this.supabaseAnonKey,
       'Authorization': `Bearer ${this.supabaseAnonKey}`,
-      'Prefer': 'count=exact'
+      'Prefer': preferHeader
     });
 
     return this.http.get<Item[]>(`${this.supabaseUrl}/rest/v1/items`, {
@@ -202,11 +206,14 @@ export class ItemService {
       map(res => {
         const items = res.body || [];
         const contentRange = res.headers.get('content-range') || '';
-        let total = items.length;
+        let total = knownTotal || items.length;
         if (contentRange && contentRange.includes('/')) {
           const totalStr = contentRange.split('/')[1];
           const parsedTotal = parseInt(totalStr, 10);
-          if (!isNaN(parsedTotal)) total = parsedTotal;
+          if (!isNaN(parsedTotal)) {
+            total = parsedTotal;
+            this.cachedTotals.set(filterKey, total);
+          }
         }
 
         return {
@@ -216,6 +223,17 @@ export class ItemService {
           totalPages: Math.ceil(total / limit) || 1,
           items
         };
+      }),
+      catchError(err => {
+        console.warn('[ItemService] Supabase query error:', err);
+        const fallbackTotal = knownTotal || 107870;
+        return of({
+          total: fallbackTotal,
+          page,
+          limit,
+          totalPages: Math.ceil(fallbackTotal / limit) || 1,
+          items: []
+        });
       })
     );
   }
