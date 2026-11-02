@@ -2,11 +2,39 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ItemService } from './services/item.service';
-import { Item, FilterOption } from './models/item.model';
+import { Item, FilterOption, ObtainSource } from './models/item.model';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { FittingRoomComponent } from './components/fitting-room/fitting-room.component';
 import { FILTERS_DATA } from './data/filters.data';
 import { INITIAL_ITEMS_DATA } from './data/initial-items.data';
+
+const LANDMARK_NEEDLES = [
+  { name: 'เข็มแลนด์มาร์คอานูบิส', id: 129759, icon: 'all_9999_3852.png' },
+  { name: 'เข็มแลนด์มาร์คไซอิ๋ว', id: 129765, icon: 'all_9999_3853.png' },
+  { name: 'เข็มแลนด์มาร์คสงครามฮีโร่', id: 129771, icon: 'all_9999_3854.png' },
+  { name: 'เข็มแลนด์มาร์คชูการ์แลนด์', id: 129777, icon: 'all_9999_3855.png' },
+  { name: 'เข็มแลนด์มาร์คแพนโดร่า', id: 129783, icon: 'all_9999_3856.png' },
+  { name: 'เข็มแลนด์มาร์คสวนสยอง', id: 129789, icon: 'all_9999_3857.png' },
+  { name: 'เข็มแลนด์มาร์คเจเนซิส', id: 129795, icon: 'all_9999_3858.png' },
+  { name: 'เข็มแลนด์มาร์คอัศวินรูปงาม', id: 129801, icon: 'all_9999_3859.png' },
+  { name: 'เข็มแลนด์มาร์คอะคาเดมี่', id: 129807, icon: 'all_9999_3860.png' },
+  { name: 'เข็มแลนด์มาร์คฟรอนเทียร์', id: 129813, icon: 'all_9999_3861.png' },
+  { name: 'เข็มแลนด์มาร์คหมู่บ้านก็อบลิน', id: 129819, icon: 'all_9999_3862.png' },
+  { name: 'เข็มแลนด์มาร์คเฟสติวัล', id: 129825, icon: 'all_9999_3863.png' },
+  { name: 'เข็มแลนด์มาร์คอันเดอร์เวิลด์', id: 129831, icon: 'all_9999_3864.png' },
+  { name: 'เข็มแลนด์มาร์คเทลส์ ดรีม', id: 129837, icon: 'all_9999_3865.png' },
+  { name: 'เข็มแลนด์มาร์คหมู่เกาะความรู้สึก', id: 129843, icon: 'all_9999_3866.png' },
+  { name: 'เข็มแลนด์มาร์คอีคลิปส์', id: 129849, icon: 'all_9999_3867.png' },
+  { name: 'เข็มแลนด์มาร์คฮอไรซอน', id: 129855, icon: 'all_9999_3868.png' },
+  { name: 'เข็มแลนด์มาร์คบริษัทปรโลก', id: 129861, icon: 'all_9999_3869.png' },
+  { name: 'เข็มแลนด์มาร์คฝ่ายดูแลมิติ', id: 129867, icon: 'all_9999_3870.png' },
+  { name: 'เข็มแลนด์มาร์คโบนาวี', id: 129873, icon: 'all_9999_3871.png' },
+  { name: 'เข็มแลนด์มาร์คยุทธภพดอกท้อ', id: 129879, icon: 'all_9999_3872.png' },
+  { name: 'เข็มแลนด์มาร์คอาณาจักรทะเลทราย', id: 129885, icon: 'all_9999_3873.png' },
+  { name: 'เข็มแลนด์มาร์คไนท์แมร์', id: 129891, icon: 'all_9999_3874.png' },
+  { name: 'เข็มแลนด์มาร์คเคออส', id: 129897, icon: 'all_9999_3875.png' },
+  { name: 'เข็มแลนด์มาร์ควิลเลจ', id: 129903, icon: 'all_9999_3876.png' }
+];
 
 @Component({
   selector: 'app-root',
@@ -101,7 +129,8 @@ export class App implements OnInit {
           name: this.cleanTags(item.name),
           description: this.cleanTags(item.description),
           stats: (item.stats || []).map(s => this.cleanTags(s)).filter(Boolean),
-          obtain_methods: (item.obtain_methods || []).map(m => this.cleanTags(m)).filter(Boolean),
+          obtain_methods: this.cleanObtainMethods(item.obtain_methods),
+          obtain_sources: this.cleanObtainSources(item.obtain_sources)
         }));
         this.items.set(cleanedItems);
         this.totalItems.set(res.total);
@@ -178,14 +207,77 @@ export class App implements OnInit {
     }
   }
 
+  cleanObtainMethods(methods: string[] | undefined): string[] {
+    return (methods || [])
+      .map(m => this.cleanTags(m))
+      .filter(m => {
+        if (!m) return false;
+        if (m.match(/(?:1,000,000|999,999)\s*(?:Cash|TR)/i)) return false;
+        if (m.match(/ร้านค้าในเกม.*(?:1,000,000|999,999)/i)) return false;
+        return true;
+      });
+  }
+
+  cleanObtainSources(sources: ObtainSource[] | undefined): ObtainSource[] {
+    if (!sources || !Array.isArray(sources)) return [];
+    return sources.filter(s => {
+      const raw = ((s.raw || '') + ' ' + (s.target_name || ''));
+      if (raw.match(/(?:1,000,000|999,999)\s*(?:Cash|TR)/i)) return false;
+      if (raw.match(/ร้านค้าในเกม.*(?:1,000,000|999,999)/i)) return false;
+      return true;
+    });
+  }
+
   openDetail(item: Item) {
-    this.selectedItem.set({
+    const cleanMethods = this.cleanObtainMethods(item.obtain_methods);
+    let cleanSources = this.cleanObtainSources(item.obtain_sources);
+
+    // 1. Expand Special Landmark Needle to all 25 recipes if missing
+    if (item.name.includes('เข็มแลนด์มาร์คพิเศษ') && cleanSources.length <= 2) {
+      cleanSources = LANDMARK_NEEDLES.map(n => ({
+        type: 'exchange',
+        label: 'แลกเปลี่ยน',
+        action: 'ใช้',
+        target_name: n.name,
+        target_id: n.id,
+        target_icon: n.icon,
+        count: 3,
+        raw: `${n.name} x3`
+      }));
+    }
+
+    const itemCopy: Item = {
       ...item,
       name: this.cleanTags(item.name),
       description: this.cleanTags(item.description),
       stats: (item.stats || []).map(s => this.cleanTags(s)).filter(Boolean),
-      obtain_methods: (item.obtain_methods || []).map(m => this.cleanTags(m)).filter(Boolean),
-    });
+      obtain_methods: cleanMethods,
+      obtain_sources: cleanSources
+    };
+
+    this.selectedItem.set(itemCopy);
+
+    // 2. Quantity bundle fallback (e.g. "ชิ้นส่วนหินแห่งความปรารถนา 20 ปี 10 ชิ้น" -> "ชิ้นส่วนหินแห่งความปรารถนา 20 ปี")
+    if (cleanSources.length === 0) {
+      const match = item.name.match(/^(.*?)\s+\d+\s*ชิ้น$/);
+      if (match) {
+        const baseName = match[1].trim();
+        this.itemService.getItems({ q: baseName, limit: 5 }).subscribe(res => {
+          const baseItem = res.items.find(i => i.name === baseName);
+          if (baseItem && this.selectedItem()?.id === item.id) {
+            const baseCleanSources = this.cleanObtainSources(baseItem.obtain_sources);
+            const baseCleanMethods = this.cleanObtainMethods(baseItem.obtain_methods);
+            if (baseCleanSources.length > 0 || baseCleanMethods.length > 0) {
+              this.selectedItem.update(curr => curr ? {
+                ...curr,
+                obtain_sources: baseCleanSources.length > 0 ? baseCleanSources : curr.obtain_sources,
+                obtain_methods: baseCleanMethods.length > 0 ? baseCleanMethods : curr.obtain_methods
+              } : null);
+            }
+          }
+        });
+      }
+    }
   }
 
   closeDetail() {
@@ -271,18 +363,15 @@ export class App implements OnInit {
 
   isRealShopPrice(item: Item): boolean {
     if (!item.game_money || item.game_money <= 0) return false;
-    // 1,000,000+ is sentinel dummy value used by devs for unpurchasable/event items
-    if (item.game_money >= 1000000) {
-      return (item.obtain_methods || []).some(m => m.includes('ร้านค้าในเกม') || m.includes('Shop'));
-    }
+    // 999,999+ and 1,000,000+ are sentinel dummy values used by devs for unpurchasable/event items
+    if (item.game_money >= 999999) return false;
     return true;
   }
 
   isRealCashPrice(item: Item): boolean {
     if (!item.cash || item.cash <= 0) return false;
-    if (item.cash >= 1000000) {
-      return (item.obtain_methods || []).some(m => m.includes('ร้านค้าในเกม') || m.includes('Shop'));
-    }
+    // 999,999+ and 1,000,000+ are sentinel dummy values used by devs for unpurchasable/event items
+    if (item.cash >= 999999) return false;
     return true;
   }
 
