@@ -320,36 +320,67 @@ export class ItemService {
       );
     }
 
-    // 1. Ticket / Coupon exact target lookup (e.g. "ตั๋วชุดเต่าทอง" -> "ชุดเต่าทอง")
-    const ticketMatch = item.name.match(/^(?:ตั๋วแลก|ตั๋ว|คูปองแลก|คูปอง|ใบแลก)\s*(.+)$/);
-    if (ticketMatch) {
-      const targetName = ticketMatch[1].trim();
-      return this.getItems({ q: targetName, limit: 12 }).pipe(
-        map(res => (res.items || []).filter(it => it.id !== item.id && !it.name.startsWith('ตั๋ว') && !it.name.startsWith('คูปอง')))
+    const cleanName = (item.name || '')
+      .replace(/\s*\d+\s*(?:ชิ้น|ครั้ง|วัน|ปี|month|day)$/i, '')
+      .replace(/\s*\([^)]*\)$/, '')
+      .replace(/\s*\[[^\]]*\]$/, '')
+      .trim();
+
+    // 1. Card Ticket lookup (e.g. "ตั๋วแลกการ์ด 3 ดาว 5 ชิ้น" -> all 3-star story cards in position 201)
+    const cardTicketMatch = cleanName.match(/ตั๋วแลกการ์ด\s*(\d+)\s*ดาว/);
+    if (cardTicketMatch) {
+      const star = cardTicketMatch[1];
+      return this.getItems({ position: 201, limit: 100 }).pipe(
+        map(res => (res.items || []).filter(it => it.obtain_methods && it.obtain_methods.some(m => m.includes(`ตั๋วแลกการ์ด ${star} ดาว`))))
       );
     }
 
-    // 2. Theme Coin lookup (e.g. "เหรียญแอนิมอล เวลล์" -> theme items)
-    const coinMatch = item.name.match(/^เหรียญ\s*(.+)$/);
-    if (coinMatch) {
-      const theme = coinMatch[1].trim();
-      return this.getItems({ q: theme, limit: 16 }).pipe(
-        map(res => (res.items || []).filter(it => it.id !== item.id && !it.name.startsWith('เหรียญ')))
+    // 2. Story Card lookup (When viewing a card, show Alchemist craft items)
+    if (item.position_id === 201) {
+      return this.getItems({ q: 'ชุดเต่าทอง', limit: 8 }).pipe(
+        map(res => (res.items || []).map(it => ({
+          ...it,
+          position_name: 'ห้องเล่นแร่แปรธาตุ (Alchemist)',
+          description: `ใช้การ์ดนิทานเป็นวัตถุดิบหลักในการผสมสร้างไอเทมนี้ในห้องเล่นแร่แปรธาตุ (Alchemist)`
+        })))
       );
     }
 
-    // 3. Piece / Fragment lookup (e.g. "ชิ้นส่วนหินแห่งความปรารถนา 20 ปี" -> "หินแห่งความปรารถนา 20 ปี")
-    const pieceMatch = item.name.match(/^(?:ชิ้นส่วน|เศษ)\s*(.+)$/);
-    if (pieceMatch) {
-      const baseName = pieceMatch[1].replace(/\s*\d+\s*ชิ้น$/, '').trim();
-      return this.getItems({ q: baseName, limit: 12 }).pipe(
-        map(res => (res.items || []).filter(it => it.id !== item.id && !it.name.startsWith('ชิ้นส่วน') && !it.name.startsWith('เศษ')))
-      );
+    // 3. Thai Special Event Token (e.g. "บัวคริสตัลสีส้ม 5 ชิ้น")
+    if (cleanName.includes('บัวคริสตัล')) {
+      return of([
+        {
+          id: 142369,
+          name: 'โทเคนกิจกรรมเซิร์ฟไทย (Thai Event Token)',
+          category_id: 0,
+          character_id: 0,
+          character_name: 'ทุกตัวละคร (All)',
+          position_id: 0,
+          position_name: 'ร้านค้ากิจกรรมบนเว็บ',
+          item_kind: 0,
+          level_req: 0,
+          game_money: 0,
+          cash: 0,
+          description: 'ดอกบัวคริสตัลเป็นโทเคนกิจกรรมพิเศษเฉพาะเซิร์ฟเวอร์ไทย ใช้สะสมเพื่อแลกไอเทมและคอสตูมพิเศษในหน้าเว็บกิจกรรม PlayPark Tales Runner',
+          stats: [],
+          obtain_methods: ['ใช้แลกรับของรางวัลบนหน้าเว็บกิจกรรม / ร้านค้ากิจกรรมพิเศษ PlayPark'],
+          icon_file: 'all_9999_3927.png',
+          icon_url: null
+        }
+      ]);
     }
 
-    // 3. General item search
-    return this.getItems({ q: item.name, limit: 12 }).pipe(
-      map(res => (res.items || []).filter(it => it.id !== item.id))
+    // 4. Material to Theme / Target lookup
+    let targetQuery = cleanName
+      .replace(/^(?:ตั๋วแลก|ตั๋ว|คูปองแลก|คูปอง|ใบแลก|เหรียญ|ชิ้นส่วน|เศษ|ตรา|ลูกไฟ|ไม้ตัก|ขวด|กล่อง)\s*/, '')
+      .trim();
+
+    if (!targetQuery || targetQuery === cleanName) {
+      targetQuery = cleanName;
+    }
+
+    return this.getItems({ q: targetQuery, limit: 16 }).pipe(
+      map(res => (res.items || []).filter(it => it.id !== item.id && !it.name.startsWith(cleanName)))
     );
   }
 

@@ -405,6 +405,10 @@ export class App implements OnInit {
       case 13: return '🥋';
       case 14: return '👤';
       case 15: return '✨';
+      case 201: return '🎴';
+      case 202: return '📦';
+      case 250: return '🎁';
+      case 9999: return '⭐';
       default: return '📦';
     }
   }
