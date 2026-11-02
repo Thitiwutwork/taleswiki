@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ItemService } from './services/item.service';
@@ -8,6 +8,54 @@ import { FittingRoomComponent } from './components/fitting-room/fitting-room.com
 import { FILTERS_DATA } from './data/filters.data';
 import { INITIAL_ITEMS_DATA } from './data/initial-items.data';
 import { ICON_FALLBACKS } from './data/icon-fallbacks.data';
+
+export type ViewMode = 'equipment' | 'usable' | 'material' | 'fitting';
+
+export const EQUIP_PIDS = '1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,101,102,103,104,105,106,107,108,109,110';
+export const USABLE_PIDS = '111,112,113,115,116,117,118,119,120,121,124,125,171,185,186,187,188,189,190,200,241,242,246,247,250,251,252,253,254,255,256,270,300,301,370,380,381,395,396,397,398,410,500,501,600,602,603,605,609,610,620,1000,1040,1045,1080';
+export const MATERIAL_PIDS = '0,201,202,813,820,825,826,831,832,9996,9997,9999,50000';
+
+export interface CategoryPill {
+  id: string | number;
+  name: string;
+  icon: string;
+}
+
+export const EQUIP_CATEGORIES: CategoryPill[] = [
+  { id: 'all', name: 'ทั้งหมด (All Equipment)', icon: '✨' },
+  { id: '8', name: 'หลัง / ปีก', icon: '🪽' },
+  { id: '1', name: 'ทรงผม', icon: '💇' },
+  { id: '2', name: 'เสื้อ', icon: '👕' },
+  { id: '3', name: 'กางเกง', icon: '👖' },
+  { id: '4', name: 'รองเท้า', icon: '👟' },
+  { id: '5', name: 'หมวก / ศีรษะ', icon: '👑' },
+  { id: '7', name: 'มือ / ถุงมือ', icon: '🧤' },
+  { id: '9', name: 'คอ / สร้อย', icon: '📿' },
+  { id: '6', name: 'ใบหน้า / แว่น', icon: '👓' },
+  { id: '10', name: 'สัตว์เลี้ยง', icon: '🐾' },
+  { id: '13', name: 'บูสเตอร์', icon: '🚀' },
+  { id: '12,14,15,16', name: 'กำไล / เครื่องประดับ', icon: '💍' },
+  { id: '11,17,18,19,20,101,102,103,104,105,106,107,108,109,110', name: 'อวตาร / ชุดเสริม', icon: '🥋' }
+];
+
+export const USABLE_CATEGORIES: CategoryPill[] = [
+  { id: 'all', name: 'ทั้งหมด (All Usables)', icon: '✨' },
+  { id: '250,251,252,253,254,255,256', name: 'กล่องสุ่ม & หีบสมบัติ', icon: '🎁' },
+  { id: '111,112', name: 'แพ็กเกจชุดเซ็ต', icon: '📦' },
+  { id: '380,381', name: 'ตู้หมุนไข่ / กาชา', icon: '🎰' },
+  { id: '171,200,241,1045', name: 'ตั๋ว บัฟ & บัตรผ่าน', icon: '🎟️' },
+  { id: '395,396,397,398', name: 'น้ำยา & ไอเทมฟาร์ม', icon: '🧪' },
+  { id: '116,185,186,187,188,189,190', name: 'ตกปลา & เหยื่อ', icon: '🎣' },
+  { id: '1000,1040,1080', name: 'ของตกแต่ง & ฟาร์ม', icon: '🏡' }
+];
+
+export const MATERIAL_CATEGORIES: CategoryPill[] = [
+  { id: 'all', name: 'ทั้งหมด (All Materials)', icon: '✨' },
+  { id: '0,813,820,825,826,831,832', name: 'วัตถุดิบ & เศษหินคราฟต์', icon: '💎' },
+  { id: '201', name: 'การ์ดนิทาน (Story Cards)', icon: '🎴' },
+  { id: '202', name: 'แพ็กการ์ด (Card Packs)', icon: '📦' },
+  { id: '9999,9996,9997,50000', name: 'เข็มแลนด์มาร์ค / โทเคนกิจกรรม', icon: '📌' }
+];
 
 const LANDMARK_NEEDLES = [
   { name: 'เข็มแลนด์มาร์คอานูบิส', id: 129759, icon: 'all_9999_3852.png' },
@@ -46,8 +94,17 @@ const LANDMARK_NEEDLES = [
 export class App implements OnInit {
   private itemService = inject(ItemService);
 
-  // View Navigation: 'search' | 'fitting'
-  currentView = signal<'search' | 'fitting'>('search');
+  // View Navigation: 'equipment' | 'usable' | 'material' | 'fitting'
+  currentView = signal<ViewMode>('equipment');
+
+  // Active Category Sub-filters based on current view
+  activeCategories = computed(() => {
+    switch (this.currentView()) {
+      case 'usable': return USABLE_CATEGORIES;
+      case 'material': return MATERIAL_CATEGORIES;
+      default: return EQUIP_CATEGORIES;
+    }
+  });
 
   // State Signals initialized instantly with pre-bundled data (0ms delay)
   items = signal<Item[]>(INITIAL_ITEMS_DATA);
@@ -114,13 +171,34 @@ export class App implements OnInit {
     });
   }
 
+  switchView(mode: ViewMode) {
+    if (this.currentView() === mode) return;
+    this.currentView.set(mode);
+    if (mode !== 'fitting') {
+      this.selectedPosition.set('all');
+      this.currentPage.set(1);
+      this.fetchItems();
+    }
+  }
+
   fetchItems() {
     if (this.items().length === 0) {
       this.isLoading.set(true);
     }
+    let posParam: string | number | undefined = this.selectedPosition();
+    if (posParam === 'all') {
+      if (this.currentView() === 'equipment') {
+        posParam = EQUIP_PIDS;
+      } else if (this.currentView() === 'usable') {
+        posParam = USABLE_PIDS;
+      } else if (this.currentView() === 'material') {
+        posParam = MATERIAL_PIDS;
+      }
+    }
+
     this.itemService.getItems({
       q: this.searchQuery(),
-      position: this.selectedPosition(),
+      position: posParam,
       character: this.selectedCharacter(),
       source: this.selectedSource(),
       has_stats: this.hasStatsOnly(),
@@ -338,6 +416,38 @@ export class App implements OnInit {
     this.openDetail(item);
     this.activeModalTab.set('usages');
     this.loadUsages(item);
+  }
+
+  tryOnItem(item: Item, event?: MouseEvent) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.itemService.pendingTryOnItem.set(item);
+    this.currentView.set('fitting');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  getUsableBadge(item: Item): { label: string; class: string } {
+    const n = item.name;
+    const p = item.position_id;
+    if (p === 380 || p === 381 || n.includes('ตู้หมุน') || n.includes('กาชา')) return { label: '🎰 ตู้หมุนไข่ / กาชา', class: 'badge-gacha' };
+    if (p === 111 || p === 112 || n.includes('แพ็ก')) return { label: '📦 แพ็กเกจเซ็ต', class: 'badge-package' };
+    if (p === 250 || n.includes('กล่อง') || n.includes('หีบ') || n.includes('ถุง')) return { label: '🎁 กล่องสุ่ม / หีบ', class: 'badge-box' };
+    if (p === 171 || p === 200 || p === 241 || p === 1045 || n.includes('ตั๋ว') || n.includes('บัตร')) return { label: '🎟️ บัตรผ่าน / ตั๋วแลก', class: 'badge-ticket' };
+    if (p === 395 || p === 396 || p === 397 || p === 398 || n.includes('น้ำยา')) return { label: '🧪 น้ำยา / ฟาร์ม', class: 'badge-potion' };
+    if (p === 116 || (p >= 185 && p <= 190) || n.includes('เบ็ด') || n.includes('เหยื่อ')) return { label: '🎣 ตกปลา & เหยื่อ', class: 'badge-fishing' };
+    return { label: '📦 ไอเทมใช้งาน', class: 'badge-usable' };
+  }
+
+  getMaterialBadge(item: Item): { label: string; class: string } {
+    const p = item.position_id;
+    const n = item.name;
+    if (p === 201) return { label: '🎴 การ์ดนิทาน', class: 'badge-card' };
+    if (p === 202) return { label: '📦 แพ็กการ์ด', class: 'badge-cardpack' };
+    if (p === 9999 || n.includes('เข็มแลนด์มาร์ค') || n.includes('โทเคน')) return { label: '📌 เข็มแลนด์มาร์ค / โทเคน', class: 'badge-landmark' };
+    if (n.includes('เศษ') || n.includes('ชิ้นส่วน')) return { label: '💎 ชิ้นส่วน / เศษหิน', class: 'badge-fragment' };
+    return { label: '🧪 วัตถุดิบผสมของ', class: 'badge-material' };
   }
 
   loadUsages(item: Item) {

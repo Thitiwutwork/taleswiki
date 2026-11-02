@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of, map, shareReplay } from 'rxjs';
 import { Item, ItemSearchResponse, FiltersResponse } from '../models/item.model';
@@ -38,6 +38,9 @@ export class ItemService {
   // Global reverse exchange index (20,919 items mapped to their exact rewards)
   private exchangeMap: Record<number, number[]> = {};
   private isExchangeMapLoaded = false;
+
+  // Signal for transferring an item to try on in Fitting Room
+  pendingTryOnItem = signal<Item | null>(null);
 
   constructor() {
     this.loadExchangeMapInBackground();

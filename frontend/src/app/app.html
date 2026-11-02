@@ -13,17 +13,38 @@
       <nav class="view-modes-nav">
         <button
           class="nav-tab-btn"
-          [class.active]="currentView() === 'search'"
-          (click)="currentView.set('search')"
+          [class.active]="currentView() === 'equipment'"
+          (click)="switchView('equipment')"
         >
-          🔍 ค้นหาไอเทม
+          <span class="tab-icon">👕</span>
+          <span class="tab-text">ไอเทมสวมใส่</span>
+          <span class="tab-badge">17.8k</span>
+        </button>
+        <button
+          class="nav-tab-btn"
+          [class.active]="currentView() === 'usable'"
+          (click)="switchView('usable')"
+        >
+          <span class="tab-icon">📦</span>
+          <span class="tab-text">ไอเทมใช้งาน</span>
+          <span class="tab-badge">19.1k</span>
+        </button>
+        <button
+          class="nav-tab-btn"
+          [class.active]="currentView() === 'material'"
+          (click)="switchView('material')"
+        >
+          <span class="tab-icon">🧪</span>
+          <span class="tab-text">วัตถุดิบ & ผสมของ</span>
+          <span class="tab-badge">70k</span>
         </button>
         <button
           class="nav-tab-btn highlight-3d"
           [class.active]="currentView() === 'fitting'"
-          (click)="currentView.set('fitting')"
+          (click)="switchView('fitting')"
         >
-          👗 ห้องแต่งตัวตัวละคร
+          <span class="tab-icon">🪞</span>
+          <span class="tab-text">ห้องแต่งตัว 3D</span>
         </button>
       </nav>
 
@@ -42,6 +63,47 @@
   } @else {
   <!-- Hero & Main Search Section -->
   <section class="search-section">
+    <!-- Contextual Mode Banner -->
+    <div class="mode-header-banner" [ngClass]="currentView()">
+      @if (currentView() === 'equipment') {
+        <div class="mode-banner-content">
+          <div class="mode-title-row">
+            <span class="mode-emoji">👕</span>
+            <div class="mode-text-wrap">
+              <h2>คลังไอเทมสวมใส่ (Equipment & Avatar)</h2>
+              <p class="mode-desc">
+                แฟชั่น เสื้อผ้า ทรงผม ปีก สัตว์เลี้ยง สเตตัสครบครัน — กด <strong>"👗 ลองสวมใส่"</strong> เพื่อทดลองใส่ในห้องแต่งตัว 3D ทันที
+              </p>
+            </div>
+          </div>
+        </div>
+      } @else if (currentView() === 'usable') {
+        <div class="mode-banner-content">
+          <div class="mode-title-row">
+            <span class="mode-emoji">📦</span>
+            <div class="mode-text-wrap">
+              <h2>คลังไอเทมใช้งาน (Consumables & Usables)</h2>
+              <p class="mode-desc">
+                กล่องสุ่ม หีบสมบัติ แพ็กเกจชุดเซ็ต ตู้หมุนไข่ บัฟ และไอเทมกดใช้ — ตรวจสอบของรางวัลที่มีโอกาสได้รับได้ทันที
+              </p>
+            </div>
+          </div>
+        </div>
+      } @else if (currentView() === 'material') {
+        <div class="mode-banner-content">
+          <div class="mode-title-row">
+            <span class="mode-emoji">🧪</span>
+            <div class="mode-text-wrap">
+              <h2>วัตถุดิบ & ไอเทมผสมของ (Crafting & Exchange Materials)</h2>
+              <p class="mode-desc">
+                ชิ้นส่วนหิน แร่ธาตุ การ์ดนิทาน โทเคนกิจกรรม และเข็มแลนด์มาร์ค — กด <strong>"🔄 นำไปแลกอะไรได้"</strong> เพื่อดูของแลกได้ทันที
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
     <div class="search-box-wrapper">
       <div class="search-input-group">
         <span class="search-icon">🔍</span>
@@ -58,121 +120,19 @@
       </div>
     </div>
 
-    <!-- Category Pills Tabs -->
+    <!-- Category Pills Tabs (Tailored dynamically per page) -->
     <div class="category-tabs-scroll">
       <div class="category-tabs">
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 'all'"
-          (click)="onSelectCategory('all')"
-        >
-          <span class="cat-icon">✨</span>
-          <span class="cat-name">ทั้งหมด</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 8"
-          (click)="onSelectCategory(8)"
-        >
-          <span class="cat-icon">🪽</span>
-          <span class="cat-name">หลัง / ปีก</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 1"
-          (click)="onSelectCategory(1)"
-        >
-          <span class="cat-icon">💇</span>
-          <span class="cat-name">ทรงผม</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 2"
-          (click)="onSelectCategory(2)"
-        >
-          <span class="cat-icon">👕</span>
-          <span class="cat-name">เสื้อ</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 3"
-          (click)="onSelectCategory(3)"
-        >
-          <span class="cat-icon">👖</span>
-          <span class="cat-name">กางเกง</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 4"
-          (click)="onSelectCategory(4)"
-        >
-          <span class="cat-icon">👟</span>
-          <span class="cat-name">รองเท้า</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 5"
-          (click)="onSelectCategory(5)"
-        >
-          <span class="cat-icon">👑</span>
-          <span class="cat-name">หมวก / ศีรษะ</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 9"
-          (click)="onSelectCategory(9)"
-        >
-          <span class="cat-icon">🚀</span>
-          <span class="cat-name">บูสเตอร์</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 10"
-          (click)="onSelectCategory(10)"
-        >
-          <span class="cat-icon">👓</span>
-          <span class="cat-name">ใบหน้า</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 11"
-          (click)="onSelectCategory(11)"
-        >
-          <span class="cat-icon">🐾</span>
-          <span class="cat-name">สัตว์เลี้ยง</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 6"
-          (click)="onSelectCategory(6)"
-        >
-          <span class="cat-icon">🧤</span>
-          <span class="cat-name">ถุงมือ</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 7"
-          (click)="onSelectCategory(7)"
-        >
-          <span class="cat-icon">📿</span>
-          <span class="cat-name">สร้อย / คอ</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 13"
-          (click)="onSelectCategory(13)"
-        >
-          <span class="cat-icon">🥋</span>
-          <span class="cat-name">ชุดเซ็ต</span>
-        </button>
-        <button
-          class="cat-tab"
-          [class.active]="selectedPosition() === 0"
-          (click)="onSelectCategory(0)"
-        >
-          <span class="cat-icon">📦</span>
-          <span class="cat-name">ทั่วไป / อื่นๆ</span>
-        </button>
+        @for (cat of activeCategories(); track cat.id) {
+          <button
+            class="cat-tab"
+            [class.active]="selectedPosition() === cat.id"
+            (click)="onSelectCategory(cat.id)"
+          >
+            <span class="cat-icon">{{ cat.icon }}</span>
+            <span class="cat-name">{{ cat.name }}</span>
+          </button>
+        }
       </div>
     </div>
 
@@ -251,9 +211,15 @@
 
   <!-- Item Grid -->
   @if (!isLoading() && items().length > 0) {
-    <div class="items-grid">
+    <div class="items-grid" [ngClass]="'grid-' + currentView()">
       @for (item of items(); track item.id) {
-        <div class="item-card" (click)="openDetail(item)" (contextmenu)="openExchangeTab(item, $event)" title="คลิกซ้าย: ดูรายละเอียด / คลิกขวา: ดูของที่แลกได้">
+        <div
+          class="item-card"
+          [ngClass]="'card-' + currentView()"
+          (click)="openDetail(item)"
+          (contextmenu)="openExchangeTab(item, $event)"
+          title="คลิกซ้าย: ดูรายละเอียด / คลิกขวา: ดูของที่แลกได้"
+        >
           <!-- Card Image Header -->
           <div class="card-icon-container">
             @if (hasIcon(item)) {
@@ -277,14 +243,27 @@
 
           <!-- Card Content -->
           <div class="card-body">
+            <!-- Tailored Meta Badges -->
             <div class="card-meta">
-              <span class="meta-slot">{{ item.position_name }}</span>
-              <span class="meta-char">{{ item.character_name }}</span>
+              @if (currentView() === 'equipment') {
+                <span class="meta-slot">{{ item.position_name }}</span>
+                <span class="meta-char">{{ item.character_name }}</span>
+              } @else if (currentView() === 'usable') {
+                <span class="meta-badge" [ngClass]="getUsableBadge(item).class">{{ getUsableBadge(item).label }}</span>
+                @if (item.character_id !== 0) {
+                  <span class="meta-char">{{ item.character_name }}</span>
+                }
+              } @else {
+                <span class="meta-badge" [ngClass]="getMaterialBadge(item).class">{{ getMaterialBadge(item).label }}</span>
+                @if (item.character_id !== 0) {
+                  <span class="meta-char">{{ item.character_name }}</span>
+                }
+              }
             </div>
 
             <h3 class="item-title" [title]="item.name">{{ item.name }}</h3>
 
-            <!-- Price tags -->
+            <!-- Price & Level tags -->
             <div class="price-tags">
               @if (isRealShopPrice(item)) {
                 <span class="price-tr">🟡 {{ item.game_money | number }} TR</span>
@@ -297,8 +276,15 @@
               }
             </div>
 
-            <!-- Stats Preview -->
-            @if (item.stats.length > 0) {
+            <!-- Description Preview (Usable & Material) -->
+            @if (currentView() !== 'equipment' && item.description) {
+              <p class="item-desc-snippet" [title]="item.description">
+                {{ item.description }}
+              </p>
+            }
+
+            <!-- Stats Preview (Equipment) -->
+            @if (currentView() === 'equipment' && item.stats.length > 0) {
               <div class="stats-preview">
                 @for (stat of item.stats.slice(0, 3); track stat) {
                   <span class="stat-pill">{{ stat }}</span>
@@ -310,18 +296,68 @@
             }
 
             <!-- How to Obtain Section -->
-            <div class="obtain-section">
-              <div class="obtain-title">📍 วิธีได้รับ:</div>
-              <div class="obtain-badges">
-                @for (method of item.obtain_methods.slice(0, 2); track method) {
-                  <span class="obtain-badge" [ngClass]="getSourceBadgeClass(method)" [title]="method">
-                    {{ method }}
-                  </span>
-                }
-                @if (item.obtain_methods.length > 2) {
-                  <span class="obtain-badge more">+{{ item.obtain_methods.length - 2 }}</span>
-                }
+            @if (item.obtain_methods && item.obtain_methods.length > 0) {
+              <div class="obtain-section">
+                <div class="obtain-title">📍 วิธีได้รับ:</div>
+                <div class="obtain-badges">
+                  @for (method of item.obtain_methods.slice(0, 2); track method) {
+                    <span class="obtain-badge" [ngClass]="getSourceBadgeClass(method)" [title]="method">
+                      {{ method }}
+                    </span>
+                  }
+                  @if (item.obtain_methods.length > 2) {
+                    <span class="obtain-badge more">+{{ item.obtain_methods.length - 2 }}</span>
+                  }
+                </div>
               </div>
+            }
+
+            <!-- Tailored Card Action Buttons -->
+            <div class="card-actions-row">
+              @if (currentView() === 'equipment') {
+                <button
+                  type="button"
+                  class="card-action-btn btn-tryon"
+                  (click)="tryOnItem(item, $event)"
+                  title="ลองสวมใส่ในห้องแต่งตัว 3D"
+                >
+                  👗 ลองสวมใส่
+                </button>
+                <button
+                  type="button"
+                  class="card-action-btn btn-inspect"
+                  (click)="openDetail(item)"
+                  title="ดูสเตตัสและรายละเอียด"
+                >
+                  🔍 สเตตัส
+                </button>
+              } @else if (currentView() === 'usable') {
+                <button
+                  type="button"
+                  class="card-action-btn btn-usable-inspect"
+                  (click)="openDetail(item)"
+                  title="ดูของรางวัลที่มีโอกาสได้รับ / วิธีใช้"
+                >
+                  🎁 ดูของในกล่อง / วิธีใช้
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  class="card-action-btn btn-exchange-quick"
+                  (click)="openExchangeTab(item, $event)"
+                  title="ดูรายการแลกเปลี่ยนของไอเทมนี้ทันที"
+                >
+                  🔄 นำไปแลกอะไรได้
+                </button>
+                <button
+                  type="button"
+                  class="card-action-btn btn-inspect"
+                  (click)="openDetail(item)"
+                  title="ดูวิธีได้รับและรายละเอียด"
+                >
+                  📍 วิธีได้รับ
+                </button>
+              }
             </div>
           </div>
         </div>

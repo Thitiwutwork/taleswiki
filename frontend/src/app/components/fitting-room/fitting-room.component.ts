@@ -163,6 +163,45 @@ export class FittingRoomComponent implements OnInit {
   ngOnInit() {
     this.loadCharacters();
     this.loadRoomSkins();
+    this.checkPendingTryOn();
+  }
+
+  private checkPendingTryOn() {
+    const pending = this.itemService.pendingTryOnItem();
+    if (pending) {
+      this.equipExternalItem(pending);
+      this.itemService.pendingTryOnItem.set(null);
+    }
+  }
+
+  equipExternalItem(item: Item) {
+    const posId = item.position_id;
+    let slotKey: string | null = null;
+    if (posId === 1) slotKey = 'hair';
+    else if (posId === 2) slotKey = 'top';
+    else if (posId === 3) slotKey = 'bottom';
+    else if (posId === 4) slotKey = 'shoes';
+    else if (posId === 5) slotKey = 'head';
+    else if (posId === 6) slotKey = 'face';
+    else if (posId === 7) slotKey = 'hand';
+    else if (posId === 8) slotKey = 'back';
+    else if (posId === 9) slotKey = 'neck';
+    else if (posId === 10) slotKey = 'pet';
+    else if (posId === 12) slotKey = 'wrist';
+    else if (posId === 13 || posId === 11) slotKey = 'expansion';
+    else if (posId === 14) slotKey = 'tail';
+    else if (posId >= 101 && posId <= 110) slotKey = 'expansion';
+
+    if (slotKey) {
+      this.equipItem(slotKey, item);
+    }
+
+    if (item.character_id && item.character_id !== 0) {
+      const targetChar = this.characters().find(c => c.id === item.character_id);
+      if (targetChar) {
+        this.selectedCharacter.set(targetChar);
+      }
+    }
   }
 
   loadRoomSkins() {

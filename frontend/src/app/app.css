@@ -121,7 +121,27 @@
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.nav-tab-btn .tab-badge {
+  font-size: 0.72rem;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  background: #e2e8f0;
+  color: #475569;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.nav-tab-btn.active .tab-badge {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.nav-tab-btn.highlight-3d.active .tab-badge {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
 }
 
 .nav-tab-btn:hover {
@@ -174,6 +194,69 @@
   flex-direction: column;
   gap: 18px;
   margin-bottom: 28px;
+}
+
+/* Contextual Mode Header Banner */
+.mode-header-banner {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px 20px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: all 0.25s ease;
+}
+
+.mode-header-banner.equipment {
+  border-left: 5px solid #0284c7;
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 75%);
+}
+
+.mode-header-banner.usable {
+  border-left: 5px solid #8b5cf6;
+  background: linear-gradient(135deg, #faf5ff 0%, #ffffff 75%);
+}
+
+.mode-header-banner.material {
+  border-left: 5px solid #10b981;
+  background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 75%);
+}
+
+.mode-banner-content {
+  display: flex;
+  align-items: center;
+}
+
+.mode-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mode-emoji {
+  font-size: 1.8rem;
+  background: #ffffff;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+}
+
+.mode-text-wrap h2 {
+  margin: 0 0 3px 0;
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.mode-desc {
+  margin: 0;
+  font-size: 0.86rem;
+  color: #64748b;
+  line-height: 1.4;
 }
 
 .search-box-wrapper {
@@ -678,6 +761,169 @@
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
   color: #334155;
+}
+
+/* Mode-Specific Meta Badges */
+.meta-badge {
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-gacha {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.badge-package {
+  background: #fae8ff;
+  color: #86198f;
+  border: 1px solid #f5d0fe;
+}
+
+.badge-box {
+  background: #ede9fe;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
+}
+
+.badge-ticket {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.badge-potion {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.badge-fishing {
+  background: #cffafe;
+  color: #0e7490;
+  border: 1px solid #a5f3fc;
+}
+
+.badge-card {
+  background: #fce7f3;
+  color: #be185d;
+  border: 1px solid #fbcfe8;
+}
+
+.badge-cardpack {
+  background: #fdf2f8;
+  color: #9d174d;
+  border: 1px solid #fce7f3;
+}
+
+.badge-landmark {
+  background: #ffedd5;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.badge-fragment {
+  background: #e0e7ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+}
+
+.badge-material {
+  background: #d1fae5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-usable {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+/* Card Description Snippet */
+.item-desc-snippet {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  min-height: 2.2rem;
+}
+
+/* Tailored Card Action Buttons Row */
+.card-actions-row {
+  margin-top: 10px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.card-action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-tryon {
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.2);
+}
+
+.btn-tryon:hover {
+  background: linear-gradient(135deg, #0369a1, #0284c7);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(2, 132, 199, 0.3);
+}
+
+.btn-inspect {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.btn-inspect:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.btn-usable-inspect {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
+}
+
+.btn-usable-inspect:hover {
+  background: linear-gradient(135deg, #7c3aed, #9333ea);
+  transform: translateY(-1px);
+}
+
+.btn-exchange-quick {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-exchange-quick:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
 }
 
 /* =========================================================
