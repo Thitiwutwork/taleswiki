@@ -35,11 +35,27 @@ export class ItemService {
   private isFullSampleLoaded = false;
   private cachedTotals = new Map<string, number>();
 
+  // Global reverse exchange index (20,919 items mapped to their exact rewards)
+  private exchangeMap: Record<number, number[]> = {};
+  private isExchangeMapLoaded = false;
+
   constructor() {
+    this.loadExchangeMapInBackground();
     // If not using local API and not using Supabase, pre-load sample items
     if (!this.apiUrl && !this.useSupabase) {
       this.loadFullSampleInBackground();
     }
+  }
+
+  private loadExchangeMapInBackground() {
+    this.http.get<Record<number, number[]>>('/data/exchange_map.json').pipe(
+      catchError(() => of({}))
+    ).subscribe(map => {
+      if (map && Object.keys(map).length > 0) {
+        this.exchangeMap = map;
+        this.isExchangeMapLoaded = true;
+      }
+    });
   }
 
   private loadFullSampleInBackground() {
@@ -319,6 +335,12 @@ export class ItemService {
       return of(SPECIAL_EXCHANGE_RECIPES[item.id]);
     }
 
+    // 1. Direct Exchange Index Lookup (Exhaustive map covering 20,919 items in Tales Runner!)
+    const targetIds = this.exchangeMap[item.id];
+    if (targetIds && targetIds.length > 0) {
+      return this.getItemsByIds(targetIds);
+    }
+
     if (this.apiUrl && !this.useSupabase) {
       return this.http.get<{ usages: Item[] }>(`${this.apiUrl}/items/${item.id}/usages`).pipe(
         map(res => res.usages || []),
@@ -337,7 +359,7 @@ export class ItemService {
       return of(SPECIAL_EXCHANGE_RECIPES[129522]);
     }
 
-    // 1. Card Ticket lookup (e.g. "ตั๋วแลกการ์ด 3 ดาว 5 ชิ้น" -> all 3-star story cards in position 201)
+    // 2. Card Ticket lookup (e.g. "ตั๋วแลกการ์ด 3 ดาว 5 ชิ้น" -> all 3-star story cards in position 201)
     const cardTicketMatch = cleanName.match(/ตั๋วแลกการ์ด\s*(\d+)\s*ดาว/);
     if (cardTicketMatch) {
       const star = cardTicketMatch[1];
@@ -346,7 +368,7 @@ export class ItemService {
       );
     }
 
-    // 2. Story Card lookup (When viewing a card, show Alchemist craft items)
+    // 3. Story Card lookup (When viewing a card, show Alchemist craft items)
     if (item.position_id === 201) {
       return this.getItems({ q: 'ชุดเต่าทอง', limit: 8 }).pipe(
         map(res => (res.items || []).map(it => ({
@@ -357,7 +379,7 @@ export class ItemService {
       );
     }
 
-    // 3. Thai Special Event Token (e.g. "บัวคริสตัลสีส้ม 5 ชิ้น")
+    // 4. Thai Special Event Token (e.g. "บัวคริสตัลสีส้ม 5 ชิ้น")
     if (cleanName.includes('บัวคริสตัล')) {
       return of([
         {
@@ -381,7 +403,7 @@ export class ItemService {
       ]);
     }
 
-    // 4. Material to Theme / Target lookup
+    // 5. Material to Theme / Target lookup
     let targetQuery = cleanName
       .replace(/^(?:ตั๋วแลก|ตั๋ว|คูปองแลก|คูปอง|ใบแลก|เหรียญ|ชิ้นส่วน|เศษ|ตรา|ลูกไฟ|ไม้ตัก|ขวด|กล่อง)\s*/, '')
       .trim();
@@ -393,6 +415,47 @@ export class ItemService {
     return this.getItems({ q: targetQuery, limit: 16 }).pipe(
       map(res => (res.items || []).filter(it => it.id !== item.id && !it.name.startsWith(cleanName)))
     );
+  }
+
+  getItemsByIds(ids: number[]): Observable<Item[]> {
+    if (!ids || ids.length === 0) return of([]);
+    const cleanIds = ids.slice(0, 48);
+
+    if (this.useSupabase) {
+      const headers = new HttpHeaders({
+        'apikey': this.supabaseAnonKey,
+        'Authorization': `Bearer ${this.supabaseAnonKey}`
+      });
+
+      const params = new HttpParams()
+        .set('id', `in.(${cleanIds.join(',')})`)
+        .set('select', 'id,name,icon_file,position_name,position_id,stats,level_req,game_money,cash,description,obtain_methods,obtain_sources')
+        .set('limit', cleanIds.length.toString());
+
+      return this.http.get<Item[]>(`${this.supabaseUrl}/rest/v1/items`, { params, headers }).pipe(
+        map(items => this.deduplicateExchangeItems(items || [])),
+        catchError(() => of([]))
+      );
+    }
+
+    const matched = this.inMemoryItems.filter(it => cleanIds.includes(it.id));
+    return of(this.deduplicateExchangeItems(matched));
+  }
+
+  private deduplicateExchangeItems(items: Item[]): Item[] {
+    const seen = new Set<string>();
+    const result: Item[] = [];
+    for (const it of items) {
+      if (it.name && it.name.includes('(ซ่อมแซม)')) continue;
+      const baseName = (it.name || '').replace(/\s*\d+\s*(?:ชิ้น|ครั้ง|วัน|ปี)$/, '').trim();
+      if (seen.has(baseName)) continue;
+      seen.add(baseName);
+      result.push({
+        ...it,
+        name: baseName
+      });
+    }
+    return result;
   }
 
   findDefaultItem(slotKey: string, characterId?: number): Item | null {
