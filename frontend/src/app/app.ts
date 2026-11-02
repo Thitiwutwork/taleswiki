@@ -218,29 +218,43 @@ export class App implements OnInit {
   }
 
   cleanObtainMethods(methods: string[] | undefined): string[] {
+    const bogusClothingPattern = /(?:แว่น|รองเท้า|กางเกง|เสื้อ|กี่เพ้า|กระโปรง|เท้าสาว|ทรงปิ่น|หางม้า|บัลเลต์|หมวย)/;
     return (methods || [])
       .map(m => this.cleanTags(m))
       .filter(m => {
         if (!m) return false;
-        if (m.match(/(?:1,?000,?000|999,?999)\s*(?:Cash|TR)/i)) return false;
-        if (m.match(/ร้านค้าในเกม.*(?:1,?000,?000|999,?999)/i)) return false;
+        if (m.match(/(?:1,?000,?000|999,?999|9,?999,?999|1000000)\s*(?:Cash|TR)/i)) return false;
+        if (m.match(/ร้านค้าในเกม.*(?:1,?000,?000|999,?999|9,?999,?999|1000000)/i)) return false;
+        if (m.match(/(?:สุ่มจาก|เปิดสุ่มจาก|กล่องสุ่มจาก)/) && bogusClothingPattern.test(m)) return false;
         return true;
       });
   }
 
   cleanObtainSources(sources: ObtainSource[] | undefined): ObtainSource[] {
     if (!sources || !Array.isArray(sources)) return [];
+    const containerKeywordPattern = /(?:กล่อง|ถุง|หีบ|แพ็ก|แพ็กเกจ|เซ็ต|ตู้|ซอง|กระปุก|โถ|กระเช้า|ไข่|ตู้หมุนไข่|ตั๋ว|คูปอง)/;
+    const bogusClothingPattern = /(?:แว่น|รองเท้า|กางเกง|เสื้อ|กี่เพ้า|กระโปรง|เท้าสาว|ทรงปิ่น|หางม้า|บัลเลต์|หมวย)/;
+
     return sources.filter(s => {
       const raw = ((s.raw || '') + ' ' + (s.target_name || ''));
-      if (raw.match(/(?:1,?000,?000|999,?999)\s*(?:Cash|TR)/i)) return false;
-      if (raw.match(/ร้านค้าในเกม.*(?:1,?000,?000|999,?999)/i)) return false;
-      if (s.type === 'shop' && s.count && s.count >= 999999) return false;
+      if (raw.match(/(?:1,?000,?000|999,?999|9,?999,?999|1000000)\s*(?:Cash|TR)/i)) return false;
+      if (raw.match(/ร้านค้าในเกม.*(?:1,?000,?000|999,?999|9,?999,?999|1000000)/i)) return false;
+      if (s.type === 'shop' && ((s.count && s.count >= 999999) || raw.match(/(?:1,?000,?000|999,?999|1000000)/))) return false;
+
+      // Purge bogus boxes (starter gear mistakenly mapped as packages)
+      if (s.type === 'box' || s.type === 'gacha') {
+        if (s.target_id && s.target_id <= 100) return false;
+        if (s.target_name) {
+          if (bogusClothingPattern.test(s.target_name)) return false;
+          if (!containerKeywordPattern.test(s.target_name)) return false;
+        }
+      }
       return true;
     });
   }
 
   openDetail(item: Item) {
-    const cleanMethods = this.cleanObtainMethods(item.obtain_methods);
+    let cleanMethods = this.cleanObtainMethods(item.obtain_methods);
     let cleanSources = this.cleanObtainSources(item.obtain_sources);
 
     // 1. Expand Special Landmark Needle to all 25 recipes if missing
@@ -257,6 +271,19 @@ export class App implements OnInit {
       }));
     }
 
+    // Fallback if cleaned sources is empty and no custom methods
+    if (cleanSources.length === 0 && !item.name.match(/\s+\d+\s*(?:ชิ้น|ครั้ง|วัน|ปี)$/)) {
+      cleanSources = [{
+        type: 'other',
+        label: 'กิจกรรม / พิเศษ',
+        action: '',
+        raw: 'กิจกรรมภายในเกม / รางวัลพิเศษ'
+      }];
+      if (cleanMethods.length === 0) {
+        cleanMethods = ['กิจกรรมภายในเกม / รางวัลพิเศษ'];
+      }
+    }
+
     const itemCopy: Item = {
       ...item,
       name: this.cleanTags(item.name),
@@ -271,25 +298,23 @@ export class App implements OnInit {
     this.itemUsages.set([]);
 
     // 2. Quantity bundle fallback (e.g. "ชิ้นส่วนหินแห่งความปรารถนา 20 ปี 10 ชิ้น" -> "ชิ้นส่วนหินแห่งความปรารถนา 20 ปี")
-    if (cleanSources.length === 0) {
-      const match = item.name.match(/^(.*?)\s+\d+\s*ชิ้น$/);
-      if (match) {
-        const baseName = match[1].trim();
-        this.itemService.getItems({ q: baseName, limit: 5 }).subscribe(res => {
-          const baseItem = res.items.find(i => i.name === baseName);
-          if (baseItem && this.selectedItem()?.id === item.id) {
-            const baseCleanSources = this.cleanObtainSources(baseItem.obtain_sources);
-            const baseCleanMethods = this.cleanObtainMethods(baseItem.obtain_methods);
-            if (baseCleanSources.length > 0 || baseCleanMethods.length > 0) {
-              this.selectedItem.update(curr => curr ? {
-                ...curr,
-                obtain_sources: baseCleanSources.length > 0 ? baseCleanSources : curr.obtain_sources,
-                obtain_methods: baseCleanMethods.length > 0 ? baseCleanMethods : curr.obtain_methods
-              } : null);
-            }
+    const match = item.name.match(/^(.*?)\s+\d+\s*(?:ชิ้น|ครั้ง|วัน|ปี)$/);
+    if (match) {
+      const baseName = match[1].trim();
+      this.itemService.getItems({ q: baseName, limit: 5 }).subscribe(res => {
+        const baseItem = res.items.find(i => i.name === baseName);
+        if (baseItem && this.selectedItem()?.id === item.id) {
+          const baseCleanSources = this.cleanObtainSources(baseItem.obtain_sources);
+          const baseCleanMethods = this.cleanObtainMethods(baseItem.obtain_methods);
+          if (baseCleanSources.length > 0 || baseCleanMethods.length > 0) {
+            this.selectedItem.update(curr => curr ? {
+              ...curr,
+              obtain_sources: baseCleanSources.length > 0 ? baseCleanSources : curr.obtain_sources,
+              obtain_methods: baseCleanMethods.length > 0 ? baseCleanMethods : curr.obtain_methods
+            } : null);
           }
-        });
-      }
+        }
+      });
     }
   }
 
@@ -377,10 +402,24 @@ export class App implements OnInit {
 
   onImageError(event: Event) {
     const img = event.target as HTMLImageElement;
-    if (img.src && img.src.includes('cdn.jsdelivr.net')) {
+    if (!img || !img.src) return;
+
+    // 1. If local /icons failed, try jsDelivr CDN
+    if (img.src.includes('/icons/') && !img.src.includes('cdn.jsdelivr.net') && !img.src.includes('raw.githubusercontent.com')) {
+      const fileName = img.src.split('/icons/').pop();
+      if (fileName && fileName.endsWith('.png') && fileName !== 'default_icon.png') {
+        img.src = `https://cdn.jsdelivr.net/gh/thitiwutwork/taleswiki@main/public/icons/${fileName}`;
+        return;
+      }
+    }
+
+    // 2. If jsDelivr failed, try Raw GitHub
+    if (img.src.includes('cdn.jsdelivr.net')) {
       img.src = img.src.replace('https://cdn.jsdelivr.net/gh/thitiwutwork/taleswiki@main', 'https://raw.githubusercontent.com/thitiwutwork/taleswiki/main');
       return;
     }
+
+    // 3. Fallback to cardboard box / emoji placeholder
     img.style.display = 'none';
     const fallback = img.nextElementSibling as HTMLElement;
     if (fallback) {

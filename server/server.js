@@ -465,7 +465,7 @@ const server = http.createServer((req, res) => {
     return handleGetItemById(res, parseInt(itemMatch[1], 10));
   }
 
-  const iconMatch = pathname.match(/^\/api\/icons\/(.+)$/);
+  const iconMatch = pathname.match(/^\/(?:api\/)?icons\/(.+)$/);
   if (iconMatch) {
     return handleServeIcon(res, iconMatch[1]);
   }

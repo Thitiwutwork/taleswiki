@@ -48,8 +48,10 @@ export class ItemService {
   }
 
   private loadExchangeMapInBackground() {
-    this.http.get<Record<number, number[]>>('/data/exchange_map.json').pipe(
-      catchError(() => of({}))
+    this.http.get<Record<number, number[]>>('data/exchange_map.json').pipe(
+      catchError(() => this.http.get<Record<number, number[]>>('https://cdn.jsdelivr.net/gh/thitiwutwork/taleswiki@main/frontend/public/data/exchange_map.json').pipe(
+        catchError(() => of({}))
+      ))
     ).subscribe(map => {
       if (map && Object.keys(map).length > 0) {
         this.exchangeMap = map;
@@ -330,7 +332,16 @@ export class ItemService {
   getExchangeTargets(item: Item): Observable<Item[]> {
     if (!item) return of([]);
 
-    // 0. Instant Special Recipes (e.g. Wish Stone 20 Years -> Bliss Crown, Bliss Wings, P/D Tickets, etc.)
+    const cleanName = (item.name || '')
+      .replace(/\s*\d+\s*(?:ชิ้น|ครั้ง|วัน|ปี|month|day)$/i, '')
+      .replace(/\s*\([^)]*\)$/, '')
+      .replace(/\s*\[[^\]]*\]$/, '')
+      .trim();
+
+    // 0. Instant Special Recipes (Wish Stone 20 Years matches all bundle variants)
+    if (cleanName.includes('หินแห่งความปรารถนา 20 ปี') && SPECIAL_EXCHANGE_RECIPES[129522]) {
+      return of(SPECIAL_EXCHANGE_RECIPES[129522]);
+    }
     if (SPECIAL_EXCHANGE_RECIPES[item.id]) {
       return of(SPECIAL_EXCHANGE_RECIPES[item.id]);
     }
@@ -339,24 +350,6 @@ export class ItemService {
     const targetIds = this.exchangeMap[item.id];
     if (targetIds && targetIds.length > 0) {
       return this.getItemsByIds(targetIds);
-    }
-
-    if (this.apiUrl && !this.useSupabase) {
-      return this.http.get<{ usages: Item[] }>(`${this.apiUrl}/items/${item.id}/usages`).pipe(
-        map(res => res.usages || []),
-        catchError(() => of([]))
-      );
-    }
-
-    const cleanName = (item.name || '')
-      .replace(/\s*\d+\s*(?:ชิ้น|ครั้ง|วัน|ปี|month|day)$/i, '')
-      .replace(/\s*\([^)]*\)$/, '')
-      .replace(/\s*\[[^\]]*\]$/, '')
-      .trim();
-
-    // Check by clean base name in special recipes
-    if (cleanName.includes('หินแห่งความปรารถนา 20 ปี') && SPECIAL_EXCHANGE_RECIPES[129522]) {
-      return of(SPECIAL_EXCHANGE_RECIPES[129522]);
     }
 
     // 2. Card Ticket lookup (e.g. "ตั๋วแลกการ์ด 3 ดาว 5 ชิ้น" -> all 3-star story cards in position 201)
