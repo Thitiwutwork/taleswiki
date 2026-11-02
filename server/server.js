@@ -99,7 +99,7 @@ function handleGetFilters(req, res) {
       SELECT character_id as id, character_name as name, COUNT(*) as count 
       FROM items 
       GROUP BY character_id, character_name 
-      ORDER BY id ASC
+      ORDER BY id DESC
     `).all();
 
     const sources = [
@@ -260,7 +260,7 @@ function handleGetItems(req, res, parsedUrl) {
     // Fetch paginated results with relevance ranking
     let orderSql = `
       CASE WHEN icon_file IS NOT NULL AND icon_file != '' THEN 0 ELSE 1 END ASC,
-      id ASC
+      id DESC
     `;
     const orderParams = [];
 

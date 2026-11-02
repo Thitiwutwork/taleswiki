@@ -141,7 +141,7 @@ export class ItemService {
 
     let httpParams = new HttpParams()
       .set('select', '*')
-      .set('order', 'id.asc')
+      .set('order', 'id.desc')
       .set('limit', limit.toString())
       .set('offset', offset.toString());
 
