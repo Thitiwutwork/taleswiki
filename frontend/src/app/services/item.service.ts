@@ -7,6 +7,7 @@ import { CHARACTERS_DATA } from '../data/characters.data';
 import { ROOM_SKINS_DATA } from '../data/skins.data';
 import { FILTERS_DATA } from '../data/filters.data';
 import { INITIAL_ITEMS_DATA } from '../data/initial-items.data';
+import { SPECIAL_EXCHANGE_RECIPES } from '../data/exchange-recipes.data';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -313,6 +314,11 @@ export class ItemService {
   getExchangeTargets(item: Item): Observable<Item[]> {
     if (!item) return of([]);
 
+    // 0. Instant Special Recipes (e.g. Wish Stone 20 Years -> Bliss Crown, Bliss Wings, P/D Tickets, etc.)
+    if (SPECIAL_EXCHANGE_RECIPES[item.id]) {
+      return of(SPECIAL_EXCHANGE_RECIPES[item.id]);
+    }
+
     if (this.apiUrl && !this.useSupabase) {
       return this.http.get<{ usages: Item[] }>(`${this.apiUrl}/items/${item.id}/usages`).pipe(
         map(res => res.usages || []),
@@ -325,6 +331,11 @@ export class ItemService {
       .replace(/\s*\([^)]*\)$/, '')
       .replace(/\s*\[[^\]]*\]$/, '')
       .trim();
+
+    // Check by clean base name in special recipes
+    if (cleanName.includes('หินแห่งความปรารถนา 20 ปี') && SPECIAL_EXCHANGE_RECIPES[129522]) {
+      return of(SPECIAL_EXCHANGE_RECIPES[129522]);
+    }
 
     // 1. Card Ticket lookup (e.g. "ตั๋วแลกการ์ด 3 ดาว 5 ชิ้น" -> all 3-star story cards in position 201)
     const cardTicketMatch = cleanName.match(/ตั๋วแลกการ์ด\s*(\d+)\s*ดาว/);
