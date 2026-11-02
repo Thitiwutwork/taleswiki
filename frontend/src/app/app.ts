@@ -249,4 +249,17 @@ export class App implements OnInit {
 
     return range;
   }
+
+  getSourceIconUrl(iconFile: string | null | undefined): string {
+    return this.itemService.getIconUrl(iconFile);
+  }
+
+  viewSourceItem(targetId: number | null | undefined) {
+    if (!targetId) return;
+    this.itemService.getItemById(targetId).subscribe(item => {
+      if (item) {
+        this.openDetail(item);
+      }
+    });
+  }
 }

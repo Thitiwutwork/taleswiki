@@ -1,3 +1,14 @@
+export interface ObtainSource {
+  type: 'gacha' | 'box' | 'exchange' | 'craft' | 'shop' | 'other';
+  label: string;
+  action?: string;
+  target_name?: string;
+  target_id?: number | null;
+  target_icon?: string | null;
+  count?: number;
+  raw: string;
+}
+
 export interface Item {
   id: number;
   name: string;
@@ -13,6 +24,7 @@ export interface Item {
   description: string;
   stats: string[];
   obtain_methods: string[];
+  obtain_sources?: ObtainSource[];
   icon_file: string | null;
   icon_url: string | null;
 }

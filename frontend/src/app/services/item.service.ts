@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of, map, shareReplay } from 'rxjs';
 import { Item, ItemSearchResponse, FiltersResponse } from '../models/item.model';
 import { CharacterInfo, RoomSkin } from '../models/character.model';
@@ -7,6 +7,7 @@ import { CHARACTERS_DATA } from '../data/characters.data';
 import { ROOM_SKINS_DATA } from '../data/skins.data';
 import { FILTERS_DATA } from '../data/filters.data';
 import { INITIAL_ITEMS_DATA } from '../data/initial-items.data';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,6 @@ export class ItemService {
   private http = inject(HttpClient);
 
   // Environment check: if running locally on port 4200/3000 with Node server, use backend API.
-  // When running on Vercel or any static host, use high-speed inlined data directly (0ms network delay).
   private isLocalServer = typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
     (window.location.port === '3000' || window.location.port === '4200');
@@ -24,14 +24,18 @@ export class ItemService {
     ? (window.location.port === '4200' ? 'http://localhost:3000/api' : '/api')
     : '';
 
+  // Supabase Configuration
+  private supabaseUrl = (environment.supabaseUrl || '').replace(/\/+$/, '');
+  private supabaseAnonKey = environment.supabaseAnonKey || '';
+  private useSupabase = Boolean(this.supabaseUrl && this.supabaseAnonKey && !this.apiUrl);
+
   // In-memory items store initialized immediately with pre-bundled items (zero network delay)
   private inMemoryItems: Item[] = [...INITIAL_ITEMS_DATA];
   private isFullSampleLoaded = false;
-  private itemsSampleCache$: Observable<Item[]> | null = null;
 
   constructor() {
-    // Silently pre-load the remaining sample items in the background
-    if (!this.apiUrl) {
+    // If not using local API and not using Supabase, pre-load sample items
+    if (!this.apiUrl && !this.useSupabase) {
       this.loadFullSampleInBackground();
     }
   }
@@ -58,12 +62,10 @@ export class ItemService {
         shareReplay(1)
       );
     }
-    // Instant bundled data: 0ms
     return of(CHARACTERS_DATA);
   }
 
   getRoomSkins(): Observable<RoomSkin[]> {
-    // Instant bundled data: 0ms
     return of(ROOM_SKINS_DATA);
   }
 
@@ -74,7 +76,6 @@ export class ItemService {
         shareReplay(1)
       );
     }
-    // Instant bundled data: 0ms
     return of(FILTERS_DATA);
   }
 
@@ -87,7 +88,7 @@ export class ItemService {
     page?: number;
     limit?: number;
   }): Observable<ItemSearchResponse> {
-    // If backend is active locally, query backend API
+    // 1. If local Node.js backend is active, query it
     if (this.apiUrl) {
       let httpParams = new HttpParams();
       if (params.q) httpParams = httpParams.set('q', params.q);
@@ -115,8 +116,96 @@ export class ItemService {
       );
     }
 
-    // High-speed synchronous in-memory filter (sub-millisecond 0ms instant response)
+    // 2. If Supabase is configured, query Supabase REST API (Lightning Fast Server-side Pagination)
+    if (this.useSupabase) {
+      return this.querySupabase(params).pipe(
+        catchError(err => {
+          console.warn('[ItemService] Supabase query failed, falling back to in-memory:', err);
+          return of(this.filterInMemory(params));
+        })
+      );
+    }
+
+    // 3. Fallback: High-speed synchronous in-memory filter
     return of(this.filterInMemory(params));
+  }
+
+  private querySupabase(params: {
+    q?: string;
+    position?: string | number;
+    character?: string | number;
+    source?: string;
+    has_stats?: boolean;
+    page?: number;
+    limit?: number;
+  }): Observable<ItemSearchResponse> {
+    const limit = params.limit || 36;
+    const page = params.page || 1;
+    const offset = (page - 1) * limit;
+
+    let httpParams = new HttpParams()
+      .set('select', '*')
+      .set('order', 'id.asc')
+      .set('limit', limit.toString())
+      .set('offset', offset.toString());
+
+    if (params.q) {
+      const q = params.q.trim();
+      httpParams = httpParams.set('name', `ilike.*${q}*`);
+    }
+
+    if (params.position !== undefined && params.position !== 'all' && params.position !== '') {
+      const pids = params.position.toString().split(',').map(p => p.trim()).filter(Boolean);
+      if (pids.length > 0) {
+        httpParams = httpParams.set('position_id', `in.(${pids.join(',')})`);
+      }
+    }
+
+    if (params.character !== undefined && params.character !== 'all' && params.character !== '') {
+      const charId = parseInt(params.character.toString(), 10);
+      if (!isNaN(charId)) {
+        httpParams = httpParams.set('or', `(character_id.eq.${charId},character_id.eq.0)`);
+      }
+    }
+
+    if (params.source && params.source !== 'all') {
+      if (params.source === 'shop_tr') {
+        httpParams = httpParams.set('game_money', 'gt.0');
+      } else if (params.source === 'shop_cash') {
+        httpParams = httpParams.set('cash', 'gt.0');
+      }
+    }
+
+    const headers = new HttpHeaders({
+      'apikey': this.supabaseAnonKey,
+      'Authorization': `Bearer ${this.supabaseAnonKey}`,
+      'Prefer': 'count=exact'
+    });
+
+    return this.http.get<Item[]>(`${this.supabaseUrl}/rest/v1/items`, {
+      params: httpParams,
+      headers,
+      observe: 'response'
+    }).pipe(
+      map(res => {
+        const items = res.body || [];
+        const contentRange = res.headers.get('content-range') || '';
+        let total = items.length;
+        if (contentRange && contentRange.includes('/')) {
+          const totalStr = contentRange.split('/')[1];
+          const parsedTotal = parseInt(totalStr, 10);
+          if (!isNaN(parsedTotal)) total = parsedTotal;
+        }
+
+        return {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit) || 1,
+          items
+        };
+      })
+    );
   }
 
   private filterInMemory(params: {
@@ -176,11 +265,22 @@ export class ItemService {
         catchError(() => of(this.inMemoryItems[0]))
       );
     }
+
+    if (this.useSupabase) {
+      const headers = new HttpHeaders({
+        'apikey': this.supabaseAnonKey,
+        'Authorization': `Bearer ${this.supabaseAnonKey}`
+      });
+      return this.http.get<Item[]>(`${this.supabaseUrl}/rest/v1/items?id=eq.${id}&select=*`, { headers }).pipe(
+        map(items => (items && items.length > 0 ? items[0] : this.inMemoryItems[0])),
+        catchError(() => of(this.inMemoryItems[0]))
+      );
+    }
+
     return of(this.inMemoryItems[0]);
   }
 
   findDefaultItem(slotKey: string, characterId?: number): Item | null {
-    // Map slotDef key to position IDs
     const posMap: Record<string, number> = {
       head: 5,
       hair: 1,

@@ -272,7 +272,7 @@ function handleGetItems(req, res, parsedUrl) {
     const selectSql = `
       SELECT id, name, category_id, character_id, character_name,
              position_id, position_name, item_kind, level_req,
-             game_money, cash, description, stats, obtain_methods,
+             game_money, cash, description, stats, obtain_methods, obtain_sources,
              icon_file, icon_url
       FROM items
       ${whereSql}
@@ -289,6 +289,7 @@ function handleGetItems(req, res, parsedUrl) {
       description: cleanTags(r.description),
       stats: r.stats ? r.stats.split(' | ').map(cleanTags).filter(Boolean) : [],
       obtain_methods: r.obtain_methods ? r.obtain_methods.split(' | ').map(cleanTags).filter(Boolean) : [],
+      obtain_sources: r.obtain_sources ? JSON.parse(r.obtain_sources) : [],
     }));
 
     sendJson(res, 200, {
@@ -317,6 +318,7 @@ function handleGetItemById(res, itemId) {
       description: cleanTags(row.description),
       stats: row.stats ? row.stats.split(' | ').map(cleanTags).filter(Boolean) : [],
       obtain_methods: row.obtain_methods ? row.obtain_methods.split(' | ').map(cleanTags).filter(Boolean) : [],
+      obtain_sources: row.obtain_sources ? JSON.parse(row.obtain_sources) : [],
     };
     sendJson(res, 200, item);
   } catch (err) {

@@ -455,14 +455,64 @@
           <!-- How to Obtain Section -->
           <div class="modal-section">
             <h4 class="section-title">📍 วิธีได้รับ / แหล่งที่มาของไอเทม</h4>
-            <div class="obtain-methods-list">
-              @for (m of it.obtain_methods; track m) {
-                <div class="obtain-row" [ngClass]="getSourceBadgeClass(m)">
-                  <span class="obtain-check">✔</span>
-                  <span class="obtain-row-text">{{ m }}</span>
-                </div>
-              }
-            </div>
+            
+            @if (it.obtain_sources && it.obtain_sources.length > 0) {
+              <div class="obtain-sources-grid">
+                @for (src of it.obtain_sources; track $index) {
+                  <div class="source-card" [class]="'source-card-' + src.type">
+                    <div class="source-card-badge">
+                      <span class="source-badge-tag">{{ src.label }}</span>
+                      @if (src.action) {
+                        <span class="source-badge-action">{{ src.action }}</span>
+                      }
+                    </div>
+
+                    <div class="source-card-body">
+                      @if (src.target_icon) {
+                        <div class="source-icon-wrap" [class.clickable]="src.target_id" (click)="viewSourceItem(src.target_id)">
+                          <img [src]="getSourceIconUrl(src.target_icon)" [alt]="src.target_name || ''" class="source-icon-img" (error)="onImageError($event)">
+                          <span class="source-fallback-icon" style="display: none;">📦</span>
+                        </div>
+                      } @else {
+                        <div class="source-emoji-icon">
+                          @if (src.type === 'gacha' || src.type === 'box') { 🎁 }
+                          @else if (src.type === 'exchange') { 🪙 }
+                          @else if (src.type === 'craft') { 🧪 }
+                          @else if (src.type === 'shop') { 🏪 }
+                          @else { 📍 }
+                        </div>
+                      }
+
+                      <div class="source-info">
+                        @if (src.target_name) {
+                          <div class="source-target-name" [class.clickable]="src.target_id" (click)="viewSourceItem(src.target_id)">
+                            {{ src.target_name }}
+                            @if (src.count && src.count > 1) {
+                              <span class="source-count-badge">x{{ src.count }}</span>
+                            }
+                          </div>
+                        } @else {
+                          <div class="source-raw-text">{{ src.raw }}</div>
+                        }
+                        
+                        @if (src.target_id) {
+                          <div class="source-hint-text">คลิกเพื่อดูรายละเอียดไอเทมต้นทาง ↗</div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="obtain-methods-list">
+                @for (m of it.obtain_methods; track m) {
+                  <div class="obtain-row" [ngClass]="getSourceBadgeClass(m)">
+                    <span class="obtain-check">✔</span>
+                    <span class="obtain-row-text">{{ m }}</span>
+                  </div>
+                }
+              </div>
+            }
           </div>
         </div>
 
