@@ -268,4 +268,31 @@ export class App implements OnInit {
       }
     });
   }
+
+  isRealShopPrice(item: Item): boolean {
+    if (!item.game_money || item.game_money <= 0) return false;
+    // 1,000,000+ is sentinel dummy value used by devs for unpurchasable/event items
+    if (item.game_money >= 1000000) {
+      return (item.obtain_methods || []).some(m => m.includes('ร้านค้าในเกม') || m.includes('Shop'));
+    }
+    return true;
+  }
+
+  isRealCashPrice(item: Item): boolean {
+    if (!item.cash || item.cash <= 0) return false;
+    if (item.cash >= 1000000) {
+      return (item.obtain_methods || []).some(m => m.includes('ร้านค้าในเกม') || m.includes('Shop'));
+    }
+    return true;
+  }
+
+  shouldShowLevelReq(item: Item): boolean {
+    if (!item.level_req || item.level_req <= 1) return false;
+    // In Tales Runner, level_req represents Rank (ยศ) and only applies to wearable gear (slots 1 to 15)
+    return item.position_id >= 1 && item.position_id <= 15;
+  }
+
+  formatLevelReq(lvl: number): string {
+    return `ยศขั้น ${lvl}`;
+  }
 }

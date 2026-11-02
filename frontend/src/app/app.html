@@ -286,14 +286,14 @@
 
             <!-- Price tags -->
             <div class="price-tags">
-              @if (item.game_money > 0) {
+              @if (isRealShopPrice(item)) {
                 <span class="price-tr">🟡 {{ item.game_money | number }} TR</span>
               }
-              @if (item.cash > 0) {
+              @if (isRealCashPrice(item)) {
                 <span class="price-cash">💎 {{ item.cash | number }} Cash</span>
               }
-              @if (item.level_req > 1) {
-                <span class="level-req">Lv.{{ item.level_req }}</span>
+              @if (shouldShowLevelReq(item)) {
+                <span class="level-req">{{ formatLevelReq(item.level_req) }}</span>
               }
             </div>
 
@@ -412,16 +412,16 @@
               <span class="badge-pill id-pill">ID: #{{ it.id }}</span>
               <span class="badge-pill slot-pill">{{ it.position_name }}</span>
               <span class="badge-pill char-pill">{{ it.character_name }}</span>
-              @if (it.level_req > 1) {
-                <span class="badge-pill lvl-pill">เลเวล {{ it.level_req }} ขึ้นไป</span>
+              @if (shouldShowLevelReq(it)) {
+                <span class="badge-pill lvl-pill">{{ formatLevelReq(it.level_req) }} ขึ้นไป</span>
               }
             </div>
             <h2 class="modal-item-name">{{ it.name }}</h2>
             <div class="modal-prices">
-              @if (it.game_money > 0) {
+              @if (isRealShopPrice(it)) {
                 <span class="modal-price tr">🟡 {{ it.game_money | number }} TR</span>
               }
-              @if (it.cash > 0) {
+              @if (isRealCashPrice(it)) {
                 <span class="modal-price cash">💎 {{ it.cash | number }} Cash</span>
               }
             </div>
