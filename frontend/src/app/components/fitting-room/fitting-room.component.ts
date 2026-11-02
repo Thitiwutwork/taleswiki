@@ -12,6 +12,7 @@ import { Item } from '../../models/item.model';
 import { CharacterInfo, RoomSkin } from '../../models/character.model';
 import { CHARACTERS_DATA } from '../../data/characters.data';
 import { ROOM_SKINS_DATA } from '../../data/skins.data';
+import { forkJoin, map, of, catchError } from 'rxjs';
 
 export interface EquipSlotDef {
   key: string;
@@ -93,6 +94,12 @@ export class FittingRoomComponent implements OnInit {
   pickerItems = signal<Item[]>([]);
   isPickerLoading = signal<boolean>(false);
   pickerSearchQuery = signal<string>('');
+
+  private parseStatValue(stat: string): number {
+    const m = stat.match(/([+-]?\s*\d+(?:\.\d+)?)/);
+    if (!m) return 0;
+    return parseFloat(m[1].replace(/\s+/g, '')) || 0;
+  }
 
   // Total Combined Stats (Base Character Stats + Item Bonuses)
   totalStats = computed(() => {

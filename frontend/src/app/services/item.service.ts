@@ -17,7 +17,7 @@ export class ItemService {
 
   // Environment check: if running locally on port 4200/3000 with Node server, use backend API.
   private isLocalServer = typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')) &&
     (window.location.port === '3000' || window.location.port === '4200');
 
   private apiUrl = this.isLocalServer
@@ -168,11 +168,23 @@ export class ItemService {
       }
     }
 
+    if (params.has_stats) {
+      httpParams = httpParams.set('stats', 'not.eq.[]');
+    }
+
     if (params.source && params.source !== 'all') {
       if (params.source === 'shop_tr') {
         httpParams = httpParams.set('game_money', 'gt.0');
       } else if (params.source === 'shop_cash') {
         httpParams = httpParams.set('cash', 'gt.0');
+      } else if (params.source === 'alchemist') {
+        httpParams = httpParams.set('obtain_sources', 'cs.[{"type":"craft"}]');
+      } else if (params.source === 'exchange') {
+        httpParams = httpParams.set('obtain_sources', 'cs.[{"type":"exchange"}]');
+      } else if (params.source === 'cube') {
+        httpParams = httpParams.set('obtain_sources', 'cs.[{"type":"box"}]');
+      } else if (params.source === 'event') {
+        httpParams = httpParams.set('obtain_sources', 'cs.[{"type":"gacha"}]');
       }
     }
 
@@ -256,13 +268,13 @@ export class ItemService {
     };
   }
 
-  getItemById(id: number): Observable<Item> {
+  getItemById(id: number): Observable<Item | null> {
     const item = this.inMemoryItems.find(it => it.id === id);
     if (item) return of(item);
 
     if (this.apiUrl) {
       return this.http.get<Item>(`${this.apiUrl}/items/${id}`).pipe(
-        catchError(() => of(this.inMemoryItems[0]))
+        catchError(() => of(null))
       );
     }
 
@@ -272,12 +284,12 @@ export class ItemService {
         'Authorization': `Bearer ${this.supabaseAnonKey}`
       });
       return this.http.get<Item[]>(`${this.supabaseUrl}/rest/v1/items?id=eq.${id}&select=*`, { headers }).pipe(
-        map(items => (items && items.length > 0 ? items[0] : this.inMemoryItems[0])),
-        catchError(() => of(this.inMemoryItems[0]))
+        map(items => (items && items.length > 0 ? items[0] : null)),
+        catchError(() => of(null))
       );
     }
 
-    return of(this.inMemoryItems[0]);
+    return of(null);
   }
 
   findDefaultItem(slotKey: string, characterId?: number): Item | null {

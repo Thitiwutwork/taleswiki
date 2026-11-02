@@ -263,6 +263,8 @@ export class App implements OnInit {
     this.itemService.getItemById(targetId).subscribe(item => {
       if (item) {
         this.openDetail(item);
+      } else {
+        alert('ไม่พบข้อมูลรายละเอียดของไอเทมต้นทางนี้ในระบบ');
       }
     });
   }

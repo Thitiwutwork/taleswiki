@@ -34,7 +34,7 @@ CREATE INDEX IF NOT EXISTS idx_items_character ON public.items(character_id);
 CREATE INDEX IF NOT EXISTS idx_items_category ON public.items(category_id);
 CREATE INDEX IF NOT EXISTS idx_items_name_trgm ON public.items USING gin (name gin_trgm_ops);
 
--- 4. Enable Row Level Security (RLS) and allow public read/insert access
+-- 4. Enable Row Level Security (RLS) - Secure Public Read Only
 ALTER TABLE public.items ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow Public Read Access" ON public.items;
@@ -42,15 +42,9 @@ CREATE POLICY "Allow Public Read Access" ON public.items
   FOR SELECT
   USING (true);
 
+-- Drop unauthenticated write policies to prevent defacement
 DROP POLICY IF EXISTS "Allow Migration Insert Access" ON public.items;
-CREATE POLICY "Allow Migration Insert Access" ON public.items
-  FOR INSERT
-  WITH CHECK (true);
-
 DROP POLICY IF EXISTS "Allow Migration Update Access" ON public.items;
-CREATE POLICY "Allow Migration Update Access" ON public.items
-  FOR UPDATE
-  USING (true);
 
 -- 5. Helpful Comment
 COMMENT ON TABLE public.items IS 'Tales Runner Items Wiki Database with 107k+ items & rich obtain sources';

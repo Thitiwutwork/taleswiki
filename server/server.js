@@ -67,6 +67,15 @@ function sendJson(res, statusCode, data) {
 }
 
 // Helper: Strip formatting tags like <color=...>, </color>, <smallbold>, etc.
+function safeJsonParse(str, fallback = []) {
+  if (!str) return fallback;
+  try {
+    return JSON.parse(str);
+  } catch (_) {
+    return fallback;
+  }
+}
+
 function cleanTags(str) {
   if (typeof str !== 'string' || !str) return '';
   return str
@@ -289,7 +298,7 @@ function handleGetItems(req, res, parsedUrl) {
       description: cleanTags(r.description),
       stats: r.stats ? r.stats.split(' | ').map(cleanTags).filter(Boolean) : [],
       obtain_methods: r.obtain_methods ? r.obtain_methods.split(' | ').map(cleanTags).filter(Boolean) : [],
-      obtain_sources: r.obtain_sources ? JSON.parse(r.obtain_sources) : [],
+      obtain_sources: safeJsonParse(r.obtain_sources),
     }));
 
     sendJson(res, 200, {
@@ -318,7 +327,7 @@ function handleGetItemById(res, itemId) {
       description: cleanTags(row.description),
       stats: row.stats ? row.stats.split(' | ').map(cleanTags).filter(Boolean) : [],
       obtain_methods: row.obtain_methods ? row.obtain_methods.split(' | ').map(cleanTags).filter(Boolean) : [],
-      obtain_sources: row.obtain_sources ? JSON.parse(row.obtain_sources) : [],
+      obtain_sources: safeJsonParse(row.obtain_sources),
     };
     sendJson(res, 200, item);
   } catch (err) {
