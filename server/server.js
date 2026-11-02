@@ -76,6 +76,13 @@ function safeJsonParse(str, fallback = []) {
   }
 }
 
+
+function normalizeThai(str) {
+  if (!str) return '';
+  str = str.normalize('NFC');
+  return str.replace(/([\u0E48-\u0E4B])([\u0E38\u0E39])/g, '$2$1').trim();
+}
+
 function cleanTags(str) {
   if (typeof str !== 'string' || !str) return '';
   return str
@@ -123,7 +130,7 @@ function handleGetFilters(req, res) {
 // 2. GET /api/items (Search & Filter)
 function handleGetItems(req, res, parsedUrl) {
   try {
-    const q = (parsedUrl.query.q || '').trim();
+    const q = normalizeThai((parsedUrl.query.q || '').trim());
     const position = parsedUrl.query.position;
     const character = parsedUrl.query.character;
     const source = parsedUrl.query.source;

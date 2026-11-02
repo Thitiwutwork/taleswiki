@@ -41,10 +41,7 @@ export class ItemService {
 
   constructor() {
     this.loadExchangeMapInBackground();
-    // If not using local API and not using Supabase, pre-load sample items
-    if (!this.apiUrl && !this.useSupabase) {
-      this.loadFullSampleInBackground();
-    }
+    this.loadFullSampleInBackground();
   }
 
   private loadExchangeMapInBackground() {
@@ -99,6 +96,14 @@ export class ItemService {
     return of(FILTERS_DATA);
   }
 
+  // Normalize Thai character sequence (e.g. consonant + vowel + tone mark canonical order)
+  normalizeThai(str: string | null | undefined): string {
+    if (!str) return '';
+    const norm = str.normalize('NFC');
+    // Swap tone marks (\u0E48-\u0E4B) and below vowels (\u0E38, \u0E39) if entered in non-canonical order
+    return norm.replace(/([\u0E48-\u0E4B])([\u0E38\u0E39])/g, '$2$1').trim();
+  }
+
   getItems(params: {
     q?: string;
     position?: string | number;
@@ -108,10 +113,10 @@ export class ItemService {
     page?: number;
     limit?: number;
   }): Observable<ItemSearchResponse> {
-    // 1. If local Node.js backend is active, query it
+    // 1. If local Node.js backend is active, query it (with automatic fallback to Supabase if local server is down)
     if (this.apiUrl) {
       let httpParams = new HttpParams();
-      if (params.q) httpParams = httpParams.set('q', params.q);
+      if (params.q) httpParams = httpParams.set('q', this.normalizeThai(params.q));
       if (params.position !== undefined && params.position !== 'all') {
         httpParams = httpParams.set('position', params.position.toString());
       }
@@ -132,7 +137,12 @@ export class ItemService {
       }
 
       return this.http.get<ItemSearchResponse>(`${this.apiUrl}/items`, { params: httpParams }).pipe(
-        catchError(() => of(this.filterInMemory(params)))
+        catchError(() => {
+          if (this.useSupabase) {
+            return this.querySupabase(params);
+          }
+          return of(this.filterInMemory(params));
+        })
       );
     }
 
@@ -165,8 +175,14 @@ export class ItemService {
       .set('offset', offset.toString());
 
     if (params.q) {
-      const q = params.q.trim();
-      httpParams = httpParams.set('name', `ilike.*${q}*`);
+      const q = this.normalizeThai(params.q);
+      const isIdQuery = /^#?\d+$/.test(q);
+      if (isIdQuery) {
+        const idNum = parseInt(q.replace(/^#/, ''), 10);
+        httpParams = httpParams.set('or', `(id.eq.${idNum},name.ilike.*${q}*)`);
+      } else {
+        httpParams = httpParams.set('name', `ilike.*${q}*`);
+      }
     }
 
     if (params.position !== undefined && params.position !== 'all' && params.position !== '') {
@@ -244,15 +260,8 @@ export class ItemService {
         };
       }),
       catchError(err => {
-        console.warn('[ItemService] Supabase query error:', err);
-        const fallbackTotal = knownTotal || 107870;
-        return of({
-          total: fallbackTotal,
-          page,
-          limit,
-          totalPages: Math.ceil(fallbackTotal / limit) || 1,
-          items: []
-        });
+        console.warn('[ItemService] Supabase query error, fallback to in-memory filter:', err);
+        return of(this.filterInMemory(params));
       })
     );
   }
@@ -269,8 +278,18 @@ export class ItemService {
     let filtered = this.inMemoryItems;
 
     if (params.q) {
-      const q = params.q.toLowerCase().trim();
-      filtered = filtered.filter(it => it.name && it.name.toLowerCase().includes(q));
+      const q = this.normalizeThai(params.q).toLowerCase();
+      const isIdQuery = /^#?\d+$/.test(q);
+      const idNum = isIdQuery ? parseInt(q.replace(/^#/, ''), 10) : -1;
+
+      filtered = filtered.filter(it => {
+        if (isIdQuery && it.id === idNum) return true;
+        const n = this.normalizeThai(it.name || '').toLowerCase();
+        if (n.includes(q)) return true;
+        const d = this.normalizeThai(it.description || '').toLowerCase();
+        if (d.includes(q)) return true;
+        return false;
+      });
     }
 
     if (params.position !== undefined && params.position !== 'all' && params.position !== '') {
