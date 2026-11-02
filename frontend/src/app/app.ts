@@ -285,7 +285,17 @@ export class App implements OnInit {
   }
 
   getIconUrl(item: Item): string {
-    return this.itemService.getIconUrl(item.icon_file);
+    if (item.icon_file) {
+      return this.itemService.getIconUrl(item.icon_file);
+    }
+    const name = item.name || '';
+    if (name.includes('แอนิมอล เวลล์')) {
+      if (name.includes('เครื่องหมุนไข่') && !name.startsWith('ใช้')) {
+        return this.itemService.getIconUrl('all_250_5444.png');
+      }
+      return this.itemService.getIconUrl('all_9999_3722.png');
+    }
+    return this.itemService.getIconUrl(null);
   }
 
   onImageError(event: Event) {
